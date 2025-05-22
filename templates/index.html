@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Appendicitis Prediction</title>
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="57x57"
+      href="./static/apple-icon-57x57.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="60x60"
+      href="./static/apple-icon-60x60.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="72x72"
+      href="./static/apple-icon-72x72.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="76x76"
+      href="./static/apple-icon-76x76.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="114x114"
+      href="./static/apple-icon-114x114.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="120x120"
+      href="./static/apple-icon-120x120.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="144x144"
+      href="./static/apple-icon-144x144.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="152x152"
+      href="./static/apple-icon-152x152.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="./static/apple-icon-180x180.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="192x192"
+      href="./static/android-icon-192x192.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="./static/favicon-32x32.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="96x96"
+      href="./static/favicon-96x96.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="16x16"
+      href="./static/favicon-16x16.png"
+    />
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="msapplication-TileColor" content="#ffffff" />
+    <meta name="msapplication-TileImage" content="/ms-icon-144x144.png" />
+    <meta name="theme-color" content="#ffffff" />
+    <style>
+      body {
+        background: linear-gradient(135deg, #1e1e2f, #3a3a5e);
+        color: #fff;
+        font-family: "Times New Roman", sans-serif;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+      }
+      .container {
+        max-width: 700px;
+        width: 100%;
+      }
+      .logo {
+        width: 100%;
+        max-width: 500px;
+        height: 90px;
+        display: block;
+        margin-bottom: 20px; 
+      }
+
+      .logo-container {
+        text-align: center;
+        margin-bottom: 10px;
+        position: relative;
+      }
+
+      /* Logo divider styles */
+      .logo-divider {
+        height: 2px;
+        background: linear-gradient(
+          to right,
+          rgba(255, 255, 255, 0.05),
+          rgba(255, 255, 255, 0.3),
+          rgba(255, 255, 255, 0.05)
+        );
+        margin-bottom: 25px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+      }
+
+      .card {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(15px);
+        border-radius: 20px;
+        padding: 30px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        transition: 0.3s;
+        position: relative;
+      }
+      .card:hover {
+        box-shadow: 0 10px 50px rgba(255, 255, 255, 0.2);
+      }
+      h1 {
+        text-shadow: 2px 2px 10px rgba(255, 255, 255, 0.3);
+        text-align: center;
+        margin-bottom: 10px;
+      }
+      .subtitle {
+        text-align: center;
+        margin-bottom: 20px;
+        color: #dddddd;
+      }
+      .form-group label {
+        text-transform: uppercase;
+        color: #ffff;
+      }
+      label .no-capitalize {
+        text-transform: none;
+      }
+      .form-control {
+        background: rgba(255, 255, 255, 0.2);
+        border: none;
+        font-size: large;
+        color: #ffff;
+        opacity: 0.8;
+        border-radius: 12px;
+        padding: 14px;
+        transition: 0.3s;
+        height: 50px;
+      }
+      .form-control::placeholder {
+        color: #656577;
+        opacity: 0.7;
+      }
+      .form-control:focus {
+        background: rgba(255, 255, 255, 0.3);
+        box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        outline: none;
+        color: #3f3f55;
+      }
+      .btn-primary {
+        background: linear-gradient(45deg, #ff6f61, #ffb74d);
+        border: none;
+        padding: 14px 25px;
+        font-size: 18px;
+        border-radius: 30px;
+        transition: 0.3s;
+        display: block;
+        width: 100%;
+        margin-top: 20px;
+        cursor: pointer;
+      }
+      .btn-primary:hover {
+        background: linear-gradient(45deg, #ff3d3d, #ff9800);
+        transform: scale(1.05);
+      }
+      #result {
+        background: linear-gradient(45deg, #ff6f61, #ffb74d);
+        color: #fff;
+        font-size: 20px;
+        font-weight: bold;
+        text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.3);
+        border-radius: 15px;
+        padding: 20px;
+        box-shadow: 0 0 15px rgba(255, 183, 77, 0.8);
+        transition: transform 0.3s ease-in-out;
+        max-width: 500px;
+        margin: 20px auto;
+        display: none;
+        text-align: center;
+      }
+
+      /* Responsive grid for form fields */
+      .form-row {
+        display: flex;
+        flex-wrap: wrap;
+        margin-right: -15px;
+        margin-left: -15px;
+      }
+
+      .form-col {
+        position: relative;
+        width: 100%;
+        padding-right: 15px;
+        padding-left: 15px;
+        flex: 0 0 100%;
+        max-width: 100%;
+      }
+
+      /* Info button styles */
+      .info-button {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        width: 30px;
+        height: 30px;
+        background-color: rgba(255, 255, 255, 0.2);
+        color: #fff;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        z-index: 100;
+        border: none;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      }
+
+      .info-button:hover {
+        background-color: rgba(255, 255, 255, 0.4);
+        transform: scale(1.1);
+      }
+
+      /* Modal styles */
+      .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(5px);
+      }
+
+      .modal-content {
+        background: linear-gradient(135deg, #2e2e4f, #4a4a7e);
+        margin: 10% auto;
+        padding: 25px;
+        border-radius: 15px;
+        width: 80%;
+        max-width: 800px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        color: #fff;
+        max-height: 80vh;
+        overflow-y: auto;
+      }
+
+      .close-modal {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+        transition: 0.3s;
+      }
+
+      .close-modal:hover,
+      .close-modal:focus {
+        color: #fff;
+        text-decoration: none;
+        cursor: pointer;
+      }
+
+      .modal-header {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        padding-bottom: 15px;
+        margin-bottom: 20px;
+      }
+
+      .modal-body h3 {
+        color: #ffb74d;
+        margin-top: 25px;
+        margin-bottom: 15px;
+      }
+
+      .modal-body p {
+        margin-bottom: 15px;
+        line-height: 1.6;
+      }
+
+      /* Media query for tablets and larger */
+      @media (min-width: 768px) {
+        .form-col {
+          flex: 0 0 50%;
+          max-width: 50%;
+        }
+      }
+
+      /* Media query for landscape mode on mobile devices */
+      @media (max-height: 500px) and (orientation: landscape) {
+        body {
+          padding: 10px;
+        }
+
+        .container {
+          max-width: 100%;
+        }
+
+        .card {
+          padding: 15px;
+          margin-top: 0;
+          overflow-y: auto;
+          max-height: 90vh;
+        }
+
+        h1 {
+          font-size: 24px;
+          margin-bottom: 5px;
+        }
+
+        .subtitle {
+          font-size: 14px;
+          margin-bottom: 10px;
+        }
+
+        .form-group {
+          margin-bottom: 10px;
+        }
+
+        .form-control {
+          padding: 8px;
+          height: 40px;
+        }
+
+        .form-row {
+          margin-right: -5px;
+          margin-left: -5px;
+        }
+
+        .form-col {
+          padding-right: 5px;
+          padding-left: 5px;
+          flex: 0 0 33.333333%;
+          max-width: 33.333333%;
+        }
+
+        .btn-primary {
+          padding: 10px;
+          margin-top: 10px;
+        }
+
+        .modal-content {
+          margin: 5% auto;
+          width: 95%;
+          max-height: 85vh;
+        }
+      }
+
+      /* Media query for larger screens */
+      @media (min-width: 1200px) {
+        .form-col {
+          flex: 0 0 33.333333%;
+          max-width: 33.333333%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="card">
+        <!-- Info Button -->
+        <button class="info-button" id="infoButton">
+          <i class="fas fa-info"></i>
+        </button>
+
+        <div class="logo-container">
+          <img
+            src="../static/logo.png"
+            alt="Appendicitis Prediction Tool Logo"
+            class="logo"
+          />
+        </div>
+
+        <!-- Divider Line -->
+        <div class="logo-divider"></div>
+        <!-- Input Form -->
+        <form id="prediction-form">
+          <div class="form-group">
+            <label for="Nausea">Nausea</label>
+            <select class="form-control" id="Nausea" required>
+              <option value="">Select option</option>
+              <option value="1">Yes</option>
+              <option value="0">No</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label for="Loss_of_Appetite">Loss of Appetite</label>
+            <select class="form-control" id="Loss_of_Appetite" required>
+              <option value="">Select option</option>
+              <option value="1">Yes</option>
+              <option value="0">No</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="Peritonitis">Peritonitis</label>
+            <select class="form-control" id="Peritonitis" required>
+              <option value="">Select option</option>
+              <option value="no">No</option>
+              <option value="local">Local</option>
+              <option value="generalized">Generalized</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="WBC_Count"
+              >WBC Count × 10<sup>3</sup> (<span class="no-capitalize"
+                >per μL</span
+              >)</label
+            >
+            <input
+              type="number"
+              step="any"
+              value="10.0"
+              class="form-control"
+              id="WBC_Count"
+              onfocus="clearDefaultValue(this)"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label for="Body_Temperature">Body Temperature (°C)</label>
+            <input
+              type="number"
+              step="any"
+              value="38.0"
+              class="form-control"
+              id="Body_Temperature"
+              onfocus="clearDefaultValue(this)"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label for="Neutrophil_Percentage">Neutrophil Percentage (%)</label>
+            <input
+              type="number"
+              value="75"
+              step="any"
+              class="form-control"
+              id="Neutrophil_Percentage"
+              onfocus="clearDefaultValue(this)"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label for="CRP"
+              >CRP (<span class="no-capitalize">mg/L</span>)</label
+            >
+            <input
+              type="number"
+              step="any"
+              value="15.0"
+              class="form-control"
+              id="CRP"
+              onfocus="clearDefaultValue(this)"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label for="Ketones_in_Urine">Ketones in Urine</label>
+            <select class="form-control" id="Ketones_in_Urine" required>
+              <option value="">Select option</option>
+              <option value="no">No</option>
+              <option value="+">+</option>
+              <option value="++">++</option>
+              <option value="+++">+++</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="Appendix_Diameter">Appendix Diameter (mm)</label>
+            <input
+              type="number"
+              step="any"
+              value="6.0"
+              class="form-control"
+              id="Appendix_Diameter"
+              onfocus="clearDefaultValue(this)"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label for="Free_Fluids">Free Fluids</label>
+            <select class="form-control" id="Free_Fluids" required>
+              <option value="">Select option</option>
+              <option value="yes">Yes</option>
+              <option value="no">No</option>
+            </select>
+          </div>
+          <button type="submit" class="btn-primary">Get Prediction</button>
+        </form>
+        <div id="result"></div>
+      </div>
+
+      <!-- Documentation Modal -->
+      <div id="docModal" class="modal">
+        <div class="modal-content">
+          <div class="modal-header">
+            <span class="close-modal">&times;</span>
+            <h2>Pediatric Appendicitis AI Prediction Tool</h2>
+          </div>
+          <div class="modal-body">
+            <p>
+              This tool uses AI to predict the likelihood of appendicitis in
+              pediatric patients based on clinical findings and laboratory
+              values.
+            </p>
+
+            <h3>About the Model</h3>
+            <p>
+              The AI model analyzes multiple clinical parameters to calculate a
+              Dharma Score, which indicates the probability of appendicitis. The
+              model was trained on data from pediatric patients and validated
+              across multiple clinical settings.
+            </p>
+
+            <h3>Input Parameters</h3>
+            <ul>
+              <li>
+                <strong>Nausea:</strong> Presence of nausea symptom (Yes/No)
+              </li>
+              <li>
+                <strong>Loss of Appetite:</strong> Presence of anorexia (Yes/No)
+              </li>
+              <li>
+                <strong>Peritonitis:</strong> Clinical signs of peritoneal
+                inflammation (None/Local/Generalized)
+              </li>
+              <li>
+                <strong>WBC Count:</strong> White blood cell count (×10³ per μL)
+              </li>
+              <li>
+                <strong>Body Temperature:</strong> Patient's temperature in
+                Celsius
+              </li>
+              <li>
+                <strong>Neutrophil Percentage:</strong> Percentage of
+                neutrophils in differential
+              </li>
+              <li><strong>CRP:</strong> C-reactive protein level in mg/L</li>
+              <li>
+                <strong>Ketones in Urine:</strong> Level of ketones detected in
+                urinalysis
+              </li>
+              <li>
+                <strong>Appendix Diameter:</strong> Ultrasound measurement in
+                millimeters
+              </li>
+              <li>
+                <strong>Free Fluids:</strong> Presence of free fluid on imaging
+                (Yes/No)
+              </li>
+            </ul>
+
+            <h3>Interpretation of Results</h3>
+            <p>The tool provides three key outputs:</p>
+            <ul>
+              <li>
+                <strong>Dharma Score:</strong> A numerical score (0-100)
+                indicating appendicitis probability
+              </li>
+              <li>
+                <strong>Diagnosis:</strong> Clinical interpretation based on the
+                score
+              </li>
+              <li>
+                <strong>Complications:</strong> Risk assessment for potential
+                complications
+              </li>
+            </ul>
+
+            <h3>Clinical Use</h3>
+            <p>
+              This tool is designed to assist clinicians in their diagnostic
+              process. It should not replace clinical judgment. Always correlate
+              results with the patient's overall clinical picture and other
+              diagnostic findings.
+            </p>
+
+            <h3>References</h3>
+            <p>
+              For more information about the validation and performance metrics
+              of this AI model, please refer to the published literature or
+              contact the developer.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script>
+      $(document).ready(function () {
+        // Info button modal functionality
+        const modal = document.getElementById("docModal");
+        const infoBtn = document.getElementById("infoButton");
+        const closeBtn = document.getElementsByClassName("close-modal")[0];
+
+        // Open modal when info button is clicked
+        infoBtn.onclick = function () {
+          modal.style.display = "block";
+        };
+
+        // Close modal when close button is clicked
+        closeBtn.onclick = function () {
+          modal.style.display = "none";
+        };
+
+        // Close modal when clicking outside of modal content
+        window.onclick = function (event) {
+          if (event.target == modal) {
+            modal.style.display = "none";
+          }
+        };
+
+        // Form submission handler
+        $("#prediction-form").on("submit", function (event) {
+          event.preventDefault();
+
+          // Function to map Ketones_in_Urine to the numeric value
+          function mapKetonesValue(value) {
+            const ketonesMapping = {
+              no: 0, // Map 'no' to 0
+              "+": 1, // Map '+' to 1
+              "++": 2, // Map '++' to 2
+              "+++": 3, // Map '+++' to 3
+            };
+            return ketonesMapping[value.toLowerCase()] || 0; // Default to 0 if value is unexpected
+          }
+
+          // Function to map Peritonitis to the numeric value
+          function mapPeritonitisValue(value) {
+            const peritonitisMapping = {
+              local: 1, // Map 'local' to 1
+              generalized: 2, // Map 'generalized' to 2
+            };
+            return peritonitisMapping[value.toLowerCase()] || 0; // Default to 0 if value is unexpected
+          }
+
+          const formData = {
+            Nausea: $("#Nausea").val() === "yes" ? 1 : 0, // Convert "yes" to 1 and "no" to 0
+            Loss_of_Appetite: $("#Loss_of_Appetite").val() === "yes" ? 1 : 0, // Convert "yes" to 1 and "no" to 0
+            Peritonitis: mapPeritonitisValue($("#Peritonitis").val()), // Convert to numeric value
+            WBC_Count: parseFloat($("#WBC_Count").val()),
+            Body_Temperature: parseFloat($("#Body_Temperature").val()),
+            Neutrophil_Percentage: parseFloat(
+              $("#Neutrophil_Percentage").val()
+            ),
+            CRP: parseFloat($("#CRP").val()),
+            Ketones_in_Urine: mapKetonesValue($("#Ketones_in_Urine").val()), // Convert to numeric value
+            Appendix_Diameter: parseFloat($("#Appendix_Diameter").val()),
+            Free_Fluids: $("#Free_Fluids").val() === "yes" ? 1 : 0, // Convert "yes" to 1 and "no" to 0
+          };
+
+          // Log the mapped data to ensure it is correct before sending
+          console.log("Mapped formData:", formData);
+
+          // Now send the mapped data to your backend
+          $.ajax({
+            url: "http://127.0.0.1:5000/predict",
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify(formData),
+            success: function (response) {
+              console.log("Prediction response:", response);
+              const resultDiv = $("#result");
+              resultDiv.empty().show();
+
+              // Create content with just the three requested elements
+              let resultContent = "";
+
+              // Add Dharma Score if available
+              if (response.Dharma_Score) {
+                resultContent += `<div class="result-item"><strong>Dharma Score:</strong> ${response.Dharma_Score}</div>`;
+              }
+
+              // Add Diagnosis message if available
+              if (response.messageDiag) {
+                resultContent += `<div class="result-item"><strong>Diagnosis:</strong> ${response.messageDiag}</div>`;
+              }
+
+              // Add Complications message if available
+              if (response.messageComp) {
+                resultContent += `<div class="result-item"><strong>Complications:</strong> ${response.messageComp}</div>`;
+              }
+
+              // Add appropriate class based on prediction
+              if (response.prediction === 1) {
+                resultDiv
+                  .removeClass("result-negative")
+                  .addClass("result-positive");
+              } else {
+                resultDiv
+                  .removeClass("result-positive")
+                  .addClass("result-negative");
+              }
+
+              // Set the content
+              resultDiv.html(resultContent);
+            },
+            error: function (xhr, status, error) {
+              console.error("Error:", status, error);
+              console.log("Response:", xhr.responseText);
+            },
+          });
+        });
+      });
+    </script>
+    <script>
+      function clearDefaultValue(input) {
+        if (input.dataset.cleared !== "true") {
+          input.dataset.cleared = "true";
+          input.value = "";
+        }
+      }
+    </script>
+  </body>
+</html>

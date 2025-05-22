@@ -1,0 +1,243 @@
+from sklearn.ensemble import RandomForestClassifier
+from fastapi import FastAPI, HTTPException,Request
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel,Field
+from joblib import load
+import numpy as np
+import pandas as pd
+from typing import Literal,Annotated
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+from fastapi.responses import HTMLResponse
+import shap
+from functools import lru_cache
+from fastapi import Request
+from fastapi.responses import JSONResponse
+
+# Initialization of FastAPI
+app= FastAPI(title="Dharma:Pediatric Appendicitis Model API")
+
+# Root endpoint
+app.mount("/static", StaticFiles(directory="static"), name="static")
+templates = Jinja2Templates(directory="templates")
+@app.get("/", response_class=HTMLResponse)
+async def read_index(request: Request):
+    return templates.TemplateResponse("1index.html", {"request": request})
+
+# CORS Middleware
+origins=[]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Checking for data correctness
+class PatientData(BaseModel):
+    Nausea:Annotated[int, Field(ge=0, le=1, description="Nausea (0 = No, 1 = Yes)")]
+    Loss_of_Appetite: Annotated[int, Field(ge=0, le=1, description="Loss of Appetite (0 = No, 1 = Yes)")]
+    Peritonitis: Annotated[int, Field(ge=0, le=2, description="Peritonitis (0 = No, 1 = Localized, 2 = Generalized)")]
+    WBC_Count: float = Field(..., ge=0, le=100, description="White blood cell count (0 to 100)")
+    Neutrophil_Percentage: float = Field(..., ge=0, le=100, description="Neutrophil % (0 to 100)")
+    CRP: float = Field(..., ge=0, le=1000, description="C-reactive protein (0 to 1000)")
+    Ketones_in_Urine: Annotated[int, Field(ge=0, le=3, description="Ketones in urine (0 = No/Trace, 1 = 1+, 2 = 2+, 3 = 3+)")]
+    Appendix_Diameter: float = Field(..., ge=0, le=50, description="Appendix diameter in mm (0 to 50)")
+    Free_Fluids: Annotated[int, Field(ge=0, le=1, description="Free fluids (0 = No, 1 = Yes)")]
+    Body_Temperature: float = Field(..., ge=30, le=50, description="Body temperature in °C (30 to 50)")
+
+# Load the trained models
+dharmaDiag = load("DharmaDiag.joblib")
+dharmaComp = load("DharmaComp.joblib")
+
+
+# Cache the SHAP explainers
+@lru_cache(maxsize=1)
+def explainer_diag():
+    return shap.TreeExplainer(dharmaDiag)
+
+@lru_cache(maxsize=1)
+def explainer_comp():
+    return shap.TreeExplainer(dharmaComp)
+
+# Function for percentile based CI
+def CI95(model,x_predict):
+    
+    tree_preds=np.array([tree.predict_proba(x_predict)[0, 1] for tree in model.estimators_]).flatten()
+    mean_prob=np.mean(tree_preds)
+    print("Mean Probability:", mean_prob)
+    print("Standard Deviation of Probability:", np.std(tree_preds,ddof=1))
+    std_prob=np.std(tree_preds,ddof=1)
+    se=std_prob/np.sqrt(555)
+    lower_ci=max(0,mean_prob-1.96*se)
+    upper_ci=min(1,mean_prob+1.96*se)
+
+  
+   
+    return(lower_ci,upper_ci)
+
+# Prediction end-point
+@app.post("/predict")
+# async def predict(request: Request):
+#     try:
+#         data = await request.json()
+#         print("🔵 Received Payload:", data)
+#         df=pd.DataFrame([data])
+#         print("🔵 DataFrame Created:", df)
+    
+
+async def predict(data: PatientData):
+    try:
+       # Conversion of input to DataFrame
+        df = pd.DataFrame(data.dict)
+        print("🔵 Received Payload:", df)
+
+        # Defining of feature sets
+        features_diag = ['Nausea', 'Loss_of_Appetite', 'Peritonitis', 'WBC_Count', 
+                         'Neutrophil_Percentage', 'CRP', 'Ketones_in_Urine', 
+                         'Appendix_Diameter', 'Free_Fluids']
+        features_comp = ['Nausea', 'Loss_of_Appetite', 'Peritonitis', 'Ketones_in_Urine', 
+                         'Free_Fluids', 'CRP', 'WBC_Count', 'Body_Temperature', 
+                         'Appendix_Diameter']
+
+        # Feature extraction
+        df_diag = df[features_diag]
+        df_comp = df[features_comp]
+        x_diag = df_diag.iloc[[0]].to_numpy()
+        x_comp = df_comp.iloc[[0]].to_numpy()
+        print("df_diag shape:", df_diag)
+        print("df_comp shape:", df_comp.shape)
+        print("x_diag shape:", x_diag)
+        print(f"dharmaDiag estimators: {len(dharmaDiag.estimators_)}")
+        print(f"dharmaComp estimators: {len(dharmaComp.estimators_)}")
+
+
+        # Threshold determination
+        appendix_diameter = df['Appendix_Diameter'].iloc[0]
+        threshold_diag = 0.30 if appendix_diameter == 0 else 0.64  # 30% if not visualized, 64% otherwise
+        threshold_comp = 0.52  # 52% for complication prediction
+
+        # Predictions
+        prob_diag = dharmaDiag.predict_proba(df_diag)[0, 1]  # Probability of appendicitis
+        prob_comp = dharmaComp.predict_proba(df_comp)[0, 1]  # Probability of complication
+      
+        # Calculation of 95% confidence intervals
+        lower_ci_diag, upper_ci_diag = CI95(dharmaDiag, x_diag)
+        lower_ci_comp, upper_ci_comp = CI95(dharmaComp, x_comp)
+
+        
+
+        # Certainty assessment based on CI width
+        ci_width_diag = upper_ci_diag - lower_ci_diag
+        ci_width_comp = upper_ci_comp - lower_ci_comp
+
+        # Diagnostic certainty based on CI
+        diag_note = ""
+        comp_note=""
+        if lower_ci_diag >= threshold_diag:
+            diag_certainty = "High Certainty"
+            pred_diag="High Likelihood of acute appendicitis"
+            diag_note="Manage in line with appendicitis protocol."
+            # Check if the lower CI is close to the threshold
+            if lower_ci_diag - threshold_diag < 0.01:  
+                diag_note = "Close to threshold, consider clinical correlation."
+        # Check if the upper CI is close to the threshold
+        elif upper_ci_diag <= threshold_diag:
+            diag_certainty = "High Certainty"
+            pred_diag="Low Likelihood of acute appendicitis"
+            diag_note="Explore alternative diagnoses."
+            # Check if the upper CI is close to the threshold
+            if threshold_diag  - upper_ci_diag < 0.01:  
+                diag_note = "Close to threshold, consider clinical correlation."
+        # Check if the CI width is small
+        elif ci_width_diag <= 0.1:
+            diag_certainty = "Stable Prediction"
+            pred_diag="Possible acute appendicitis"
+            if threshold_diag == 0.30:
+                diag_note= "Consider imaging for confirmation."
+            else:
+                diag_note= "Consider clinical correlation and/or CT for Confirmation."
+        # If the CI width is large
+        else:
+            pred_diag="Possible acute appendicitis"
+            diag_certainty = "Unstable Prediction"
+            diag_note="Specialist Evaluation Recommended."
+        
+        # Prognostic certainty based on CI
+        comp_note = ""
+        if lower_ci_comp >= threshold_comp:
+            comp_note = "High Risk of Complications"
+        elif upper_ci_comp <= threshold_comp:
+            comp_note = "Low Risk of Complications"
+        else:
+            comp_note = "Moderate Uncertainty, Anticipate possible complications."
+          # Construct response
+        response = {
+            "diagnosis": {
+                "dharma_score": round(prob_diag * 100, 2),
+                "confidence_interval": [round(lower_ci_diag * 100, 2), round(upper_ci_diag * 100, 2)],
+                "prediction": pred_diag,
+                "threshold_used": round(threshold_diag * 100, 2),
+                "certainty": diag_certainty,
+                "note": diag_note
+            },
+            "complication": {
+                "probability": round(prob_comp * 100, 2),
+                "confidence_interval": [round(lower_ci_comp * 100, 2), round(upper_ci_comp * 100, 2)],
+                "note": comp_note
+            }
+        }
+
+        return response
+    except Exception as e:
+        print("Error:", e)
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+    
+# SHAP values endpoint
+@app.post("/explanation")
+# async def get_explanation(request: Request):
+#     print("🔵 SHAP values endpoint called")
+#     # Your logic here
+#     return {"message": "Explanation generated"}
+async def explanation(data: PatientData):
+    try:
+        # Conversion of input to DataFrame
+        df = pd.DataFrame([data.dict()])
+
+        # Defining of feature sets
+        features_diag = ['Nausea', 'Loss_of_Appetite', 'Peritonitis', 'WBC_Count', 
+                         'Neutrophil_Percentage', 'CRP', 'Ketones_in_Urine', 
+                         'Appendix_Diameter', 'Free_Fluids']
+        features_comp = ['Nausea', 'Loss_of_Appetite', 'Peritonitis', 'Ketones_in_Urine', 
+                         'Free_Fluids', 'CRP', 'WBC_Count', 'Body_Temperature', 
+                         'Appendix_Diameter']
+
+        # Feature extraction
+        df_diag = df[features_diag]
+        df_comp = df[features_comp]
+
+        # SHAP values calculation
+        shap_values_diag = explainer_diag().shap_values(df_diag)
+        shap_values_comp = explainer_comp().shap_values(df_comp)
+        shap_diag_positive = shap_values_diag[0, :, 1] 
+        shap_comp_positive = shap_values_comp[0, :, 1]
+        base_value_diag = explainer_diag().expected_value[1]
+        base_value_comp = explainer_comp().expected_value[1]
+
+
+        # Convert SHAP values to DataFrame for better readability
+        shap_df_diag = pd.DataFrame(shap_values_diag, columns=features_diag)
+        shap_df_comp = pd.DataFrame(shap_values_comp, columns=features_comp)
+
+        return {
+            "shap_values": {
+                "diagnosis": shap_df_diag.to_dict(orient="records"),
+                "base_value_diag": base_value_diag,
+                "complication": shap_df_comp.to_dict(orient="records"),
+                "base_value_comp": base_value_comp
+            }
+        }
+    except Exception as e:
+        print("Error:", e)
+        raise HTTPException(status_code=500, detail="Internal Server Error")
