@@ -36,16 +36,16 @@ app.add_middleware(
 
 # Checking for data correctness
 class PatientData(BaseModel):
-    Nausea:Annotated[int, Field(ge=0, le=1, description="Nausea (0 = No, 1 = Yes)")]
-    Loss_of_Appetite: Annotated[int, Field(ge=0, le=1, description="Loss of Appetite (0 = No, 1 = Yes)")]
-    Peritonitis: Annotated[int, Field(ge=0, le=2, description="Peritonitis (0 = No, 1 = Localized, 2 = Generalized)")]
-    WBC_Count: float = Field(..., ge=0, le=100, description="White blood cell count (0 to 100)")
-    Neutrophil_Percentage: float = Field(..., ge=0, le=100, description="Neutrophil % (0 to 100)")
-    CRP: float = Field(..., ge=0, le=1000, description="C-reactive protein (0 to 1000)")
-    Ketones_in_Urine: Annotated[int, Field(ge=0, le=3, description="Ketones in urine (0 = No/Trace, 1 = 1+, 2 = 2+, 3 = 3+)")]
-    Appendix_Diameter: float = Field(..., ge=0, le=50, description="Appendix diameter in mm (0 to 50)")
-    Free_Fluids: Annotated[int, Field(ge=0, le=1, description="Free fluids (0 = No, 1 = Yes)")]
-    Body_Temperature: float = Field(..., ge=30, le=50, description="Body temperature in °C (30 to 50)")
+    Nausea:int
+    Loss_of_Appetite: int
+    Peritonitis: int
+    WBC_Count: float 
+    Neutrophil_Percentage: float 
+    CRP: float 
+    Ketones_in_Urine: int
+    Appendix_Diameter: float 
+    Free_Fluids: int
+    Body_Temperature: float 
 
 # Load the trained models
 dharmaDiag = load("DharmaDiag.joblib")
@@ -90,7 +90,7 @@ def CI95(model,x_predict):
 async def predict(data: PatientData):
     try:
        # Conversion of input to DataFrame
-        df = pd.DataFrame(data.dict)
+        df = pd.DataFrame([data.dict()])
         print("🔵 Received Payload:", df)
 
         # Defining of feature sets
@@ -220,22 +220,39 @@ async def explanation(data: PatientData):
         # SHAP values calculation
         shap_values_diag = explainer_diag().shap_values(df_diag)
         shap_values_comp = explainer_comp().shap_values(df_comp)
+       
         shap_diag_positive = shap_values_diag[0, :, 1] 
         shap_comp_positive = shap_values_comp[0, :, 1]
+  
         base_value_diag = explainer_diag().expected_value[1]
         base_value_comp = explainer_comp().expected_value[1]
 
-
         # Convert SHAP values to DataFrame for better readability
-        shap_df_diag = pd.DataFrame(shap_values_diag, columns=features_diag)
-        shap_df_comp = pd.DataFrame(shap_values_comp, columns=features_comp)
+        shap_df_diag = pd.DataFrame(shap_diag_positive, index=features_diag, columns=['SHAP value'])
+        shap_df_comp = pd.DataFrame(shap_comp_positive, index=features_comp, columns=['SHAP value'])    
+        shap_df_diag = shap_df_diag.sort_values("SHAP value", ascending=False)
+        shap_df_comp = shap_df_comp.sort_values("SHAP value", ascending=False)
+        # Add base values to the DataFrame
+        shap_df_diag.loc["Base Value"] = [base_value_diag]
+        shap_df_comp.loc["Base Value"] = [base_value_comp]
+        shap_df_diag.loc['Result']= [shap_df_diag["SHAP value"].sum()]
+        shap_df_comp.loc['Result']= [shap_df_comp["SHAP value"].sum()]
+        shap_df_diag['Feature'] = shap_df_diag.index
+        shap_df_comp['Feature'] = shap_df_comp.index
+
+        shap_df_diag = shap_df_diag.reset_index(drop=True)
+        shap_df_comp = shap_df_comp.reset_index(drop=True)
+        shap_df_diag = shap_df_diag[['Feature', 'SHAP value']]
+        shap_df_comp = shap_df_comp[['Feature', 'SHAP value']]
+        json_diag = shap_df_diag.to_dict(orient="records")
+        json_comp = shap_df_comp.to_dict(orient="records")
+        
 
         return {
             "shap_values": {
-                "diagnosis": shap_df_diag.to_dict(orient="records"),
-                "base_value_diag": base_value_diag,
-                "complication": shap_df_comp.to_dict(orient="records"),
-                "base_value_comp": base_value_comp
+                "diagnosis": json_diag,
+                "complication": json_comp
+                
             }
         }
     except Exception as e:
