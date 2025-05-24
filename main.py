@@ -136,15 +136,15 @@ async def predict(data: PatientData):
         diag_note = ""
         comp_note=""
         if lower_ci_diag >= threshold_diag:
-            diag_certainty = "High Certainty"
+            diag_certainty = "High Confidence"
             pred_diag="High Likelihood of acute appendicitis"
             diag_note="Manage in line with appendicitis protocol."
             # Check if the lower CI is close to the threshold
             if lower_ci_diag - threshold_diag < 0.01:  
                 diag_note = "Close to threshold, consider clinical correlation."
         # Check if the upper CI is close to the threshold
-        elif upper_ci_diag <= threshold_diag:
-            diag_certainty = "High Certainty"
+        elif upper_ci_diag < threshold_diag:
+            diag_certainty = "High Confidence"
             pred_diag="Low Likelihood of acute appendicitis"
             diag_note="Explore alternative diagnoses."
             # Check if the upper CI is close to the threshold
@@ -179,13 +179,14 @@ async def predict(data: PatientData):
                 "confidence_interval": [round(lower_ci_diag * 100, 2), round(upper_ci_diag * 100, 2)],
                 "prediction": pred_diag,
                 "threshold_used": round(threshold_diag * 100, 2),
-                "certainty": diag_certainty,
+                "diagnostic_certainty": diag_certainty,
                 "note": diag_note
             },
             "complication": {
                 "probability": round(prob_comp * 100, 2),
                 "confidence_interval": [round(lower_ci_comp * 100, 2), round(upper_ci_comp * 100, 2)],
-                "note": comp_note
+                "note": comp_note,
+                "threshold": threshold_comp
             }
         }
 

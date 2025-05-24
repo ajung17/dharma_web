@@ -102,7 +102,7 @@ def predict():
                 'messageComp': 'High Risk of Complications' if prediction_c else 'Low Risk of Complications',
                 'upper_c': None,
                 'lower_c': None,
-            })
+            }) 
             else:
                 return jsonify({
                 'Dharma_Score': f'{lower_d_percent}% - {upper_d_percent}%',
