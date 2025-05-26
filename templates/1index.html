@@ -44,6 +44,8 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
     />
     <link rel="stylesheet" href="/static/style.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   </head>
   <body>
     <div class="container">
@@ -198,75 +200,124 @@
       </div>
 
       <!-- Documentation Modal -->
-<div id="docModal" class="modal">
-  <div class="modal-content">
-    <div class="modal-header">
-      <span class="close-modal">&times;</span>
-      <h2>Pediatric Appendicitis AI Prediction Tool</h2>
-    </div>
-    <div class="modal-body">
-      <!-- Section buttons -->
-      <div class="section-buttons">
-        <button class="section-btn active" data-section="about">About</button>
-        <button class="section-btn" data-section="evidence">Evidence</button>
-        <button class="section-btn" data-section="creator">Creator</button>
+      <div id="docModal" class="modal">
+        <div class="modal-content">
+          <div class="modal-header">
+            <span class="close-modal">&times;</span>
+            <h2>Pediatric Appendicitis AI Prediction Tool</h2>
+          </div>
+          <div class="modal-body">
+            <!-- Section buttons -->
+            <div class="section-buttons">
+              <button class="section-btn active" data-section="about">
+                About
+              </button>
+              <button class="section-btn" data-section="evidence">
+                Evidence
+              </button>
+              <button class="section-btn" data-section="creator">
+                Creator
+              </button>
+            </div>
+
+            <!-- Sections -->
+            <div id="about" class="section-content">
+              <p>
+                This tool uses AI to predict the likelihood of appendicitis in
+                pediatric patients based on clinical findings and laboratory
+                values.
+              </p>
+
+              <h3>About the Model</h3>
+              <p>
+                The AI model analyzes multiple clinical parameters to calculate
+                a Dharma Score, which indicates the probability of appendicitis.
+                The model was trained on data from pediatric patients and
+                validated across multiple clinical settings.
+              </p>
+
+              <h3>Input Parameters</h3>
+              <ul>
+                <li>
+                  <strong>Nausea:</strong> Presence of nausea symptom (Yes/No)
+                </li>
+                <li>
+                  <strong>Loss of Appetite:</strong> Presence of anorexia
+                  (Yes/No)
+                </li>
+                <li>
+                  <strong>Peritonitis:</strong> Clinical signs of peritoneal
+                  inflammation (None/Local/Generalized)
+                </li>
+                <li>
+                  <strong>WBC Count:</strong> White blood cell count (×10³ per
+                  μL)
+                </li>
+                <li>
+                  <strong>Body Temperature:</strong> Patient's temperature in
+                  Celsius
+                </li>
+                <li>
+                  <strong>Neutrophil Percentage:</strong> Percentage of
+                  neutrophils in differential
+                </li>
+                <li><strong>CRP:</strong> C-reactive protein level in mg/L</li>
+                <li>
+                  <strong>Ketones in Urine:</strong> Level of ketones detected
+                  in urinalysis
+                </li>
+                <li>
+                  <strong>Appendix Diameter:</strong> Ultrasound measurement in
+                  millimeters
+                </li>
+                <li>
+                  <strong>Free Fluids:</strong> Presence of free fluid on
+                  imaging (Yes/No)
+                </li>
+              </ul>
+            </div>
+
+            <div id="evidence" class="section-content" style="display: none">
+              <h3>Evidence & Validation</h3>
+              <p>
+                The model was rigorously validated using clinical data from
+                multiple hospitals. It showed high sensitivity and specificity
+                in identifying pediatric appendicitis.
+              </p>
+              <ul>
+                <li>Validated on over 1,000 pediatric cases.</li>
+                <li>Demonstrated an accuracy of 92% in clinical trials.</li>
+                <li>Peer-reviewed in multiple journals.</li>
+              </ul>
+              <p>
+                For more detailed validation data and references, please consult
+                the documentation or contact the developer.
+              </p>
+            </div>
+
+            <div id="creator" class="section-content" style="display: none">
+              <h3>Creator</h3>
+              <p>
+                This AI tool was developed by the DHARMA research team dedicated
+                to improving pediatric appendicitis diagnosis.
+              </p>
+              <p>
+                Contact:
+                <a href="mailto:developer@example.com" style="color: #ccc"
+                  >developer@example.com</a
+                ><br />
+                Website:
+                <a
+                  href="https://dharma.example.com"
+                  target="_blank"
+                  style="color: #ccc"
+                  >https://dharma.example.com</a
+                >
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
-
-      <!-- Sections -->
-      <div id="about" class="section-content">
-        <p>
-          This tool uses AI to predict the likelihood of appendicitis in pediatric patients based on clinical findings and laboratory values.
-        </p>
-
-        <h3>About the Model</h3>
-        <p>
-          The AI model analyzes multiple clinical parameters to calculate a Dharma Score, which indicates the probability of appendicitis. The model was trained on data from pediatric patients and validated across multiple clinical settings.
-        </p>
-
-        <h3>Input Parameters</h3>
-        <ul>
-          <li><strong>Nausea:</strong> Presence of nausea symptom (Yes/No)</li>
-          <li><strong>Loss of Appetite:</strong> Presence of anorexia (Yes/No)</li>
-          <li><strong>Peritonitis:</strong> Clinical signs of peritoneal inflammation (None/Local/Generalized)</li>
-          <li><strong>WBC Count:</strong> White blood cell count (×10³ per μL)</li>
-          <li><strong>Body Temperature:</strong> Patient's temperature in Celsius</li>
-          <li><strong>Neutrophil Percentage:</strong> Percentage of neutrophils in differential</li>
-          <li><strong>CRP:</strong> C-reactive protein level in mg/L</li>
-          <li><strong>Ketones in Urine:</strong> Level of ketones detected in urinalysis</li>
-          <li><strong>Appendix Diameter:</strong> Ultrasound measurement in millimeters</li>
-          <li><strong>Free Fluids:</strong> Presence of free fluid on imaging (Yes/No)</li>
-        </ul>
-      </div>
-
-      <div id="evidence" class="section-content" style="display:none;">
-        <h3>Evidence & Validation</h3>
-        <p>
-          The model was rigorously validated using clinical data from multiple hospitals. It showed high sensitivity and specificity in identifying pediatric appendicitis.
-        </p>
-        <ul>
-          <li>Validated on over 1,000 pediatric cases.</li>
-          <li>Demonstrated an accuracy of 92% in clinical trials.</li>
-          <li>Peer-reviewed in multiple journals.</li>
-        </ul>
-        <p>
-          For more detailed validation data and references, please consult the documentation or contact the developer.
-        </p>
-      </div>
-
-      <div id="creator" class="section-content" style="display:none;">
-        <h3>Creator</h3>
-        <p>
-          This AI tool was developed by the DHARMA research team dedicated to improving pediatric appendicitis diagnosis.
-        </p>
-        <p>
-          Contact: <a href="mailto:developer@example.com" style="color:#ccc;">developer@example.com</a><br/>
-          Website: <a href="https://dharma.example.com" target="_blank" style="color:#ccc;">https://dharma.example.com</a>
-        </p>
-      </div>
-    </div>
-  </div>
-</div>
-
       <!-- Explanation Modal -->
       <div id="explainModal" class="modal">
         <div class="modal-content">
@@ -274,8 +325,7 @@
             <span class="close-modal">×</span>
             <h2>Prediction Explanation</h2>
           </div>
-          <div class="modal-body" id="explainResult">
-          </div>
+          <div class="modal-body" id="explainResult"></div>
         </div>
       </div>
     </div>

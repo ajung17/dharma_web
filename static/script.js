@@ -1,8 +1,11 @@
+let predictionData = null;
+let explanationData = null;
 $(document).ready(function () {
   // Info button modal functionality
   const docModal = document.getElementById("docModal");
   const infoBtn = document.getElementById("infoButton");
   const docCloseBtn = docModal.getElementsByClassName("close-modal")[0];
+
 
   // Explanation modal functionality
   const explainModal = document.getElementById("explainModal");
@@ -71,6 +74,7 @@ $(document).ready(function () {
         console.log("Server response for", action, ":", response); // Log for debugging
 
         if (action === "predict") {
+          predictionData = response;
           const diagnosis = response.diagnosis;
           const complication = response.complication;
 
@@ -150,6 +154,7 @@ $(document).ready(function () {
           $("#result").show().html(html);
           $("#explainButton").removeClass("hidden");
         } else if (action === "explaination") {
+          explanationData = response;
           renderShapTables(response.shap_values);
         }
       },
@@ -163,6 +168,7 @@ $(document).ready(function () {
 
 // Function to render SHAP tables in the explanation modal
 function renderShapTables(shapValues) {
+
   let html = '<div class="shap-tables-container">';
 
   for (const type of ["diagnosis", "complication"]) {
@@ -215,6 +221,13 @@ function renderShapTables(shapValues) {
 
   html += "</div>";
   $("#explainResult").html(html);
+  $("#explainResult").append(`
+      <div class="text-center mt-4">
+        <button id="downloadReport" class="download-btn">Download Full Report</button>
+      </div>
+    `);
+    
+    $("#downloadReport").on("click", downloadReport);
   $("#explainModal").show(); // Show the explanation modal
 }
 
@@ -243,3 +256,212 @@ $(document).ready(function () {
     $("#" + sectionToShow).show();
   });
 });
+// Add this new function outside document.ready
+function downloadReport() {
+  if (!predictionData) {
+    alert("Please make a prediction first before downloading the report.");
+    return;
+  }
+
+  // Create a formatted date string
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('en-US', {
+    year: 'numeric', 
+    month: 'long', 
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+
+  // Extract diagnosis and complication data
+  const diag = predictionData.diagnosis;
+  const comp = predictionData.complication;
+  
+  // Create HTML content for the report
+  let htmlContent = `
+    <!DOCTYPE html>
+    <html>
+    <head>  
+      <title>Dharma AI</title>
+      <style>
+        body {
+          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+          line-height: 1.6;
+          color: #333;
+          max-width: 800px;
+          margin: 0 auto;
+          padding: 20px;
+        }
+        .header {
+          text-align: center;
+          margin-bottom: 30px;
+          border-bottom: 2px solid #0066cc;
+          padding-bottom: 10px;
+        }
+        .header h1 {
+          color: #0066cc;
+          margin-bottom: 5px;
+        }
+        .patient-info {
+          background-color: #f5f5f5;
+          padding: 15px;
+          border-radius: 5px;
+          margin-bottom: 20px;
+        }
+        .section {
+          margin-bottom: 25px;
+        }
+        .section-title {
+          color: #0066cc;
+          border-bottom: 1px solid #ddd;
+          padding-bottom: 5px;
+          margin-bottom: 15px;
+        }
+        .result-box {
+          border: 1px solid #ddd;
+          border-radius: 5px;
+          padding: 15px;
+          margin-bottom: 15px;
+          background-color: #f9f9f9;
+        }
+        .highlight {
+          font-weight: bold;
+          color: #0066cc;
+        }
+        .high-risk {
+          color: #d9534f;
+          font-weight: bold;
+        }
+        .low-risk {
+          color: #5cb85c;
+          font-weight: bold;
+        }
+        table {
+          width: 100%;
+          border-collapse: collapse;
+          margin: 15px 0;
+        }
+        th, td {
+          border: 1px solid #ddd;
+          padding: 8px;
+          text-align: left;
+        }
+        th {
+          background-color: #f2f2f2;
+        }
+        .positive {
+          color: #d9534f;
+        }
+        .negative {
+          color: #5cb85c;
+        }
+        .footer {
+          text-align: center;
+          margin-top: 30px;
+          font-size: 0.9em;
+          color: #777;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="header">
+        <h1>Dharma: Appendicitis Model</h1>
+        <p>Generated on ${dateStr}</p>
+      </div>
+      
+      <div class="patient-info">
+        <h3>Patient Assessment Summary</h3>
+      </div>
+      
+      <div class="section">
+        <h3 class="section-title">Diagnosis Results</h3>
+        <div class="result-box">
+          <p><strong>Dharma Score:</strong> <span class="highlight">${Math.round(diag.dharma_score)}%</span></p>
+          <p><strong>Prediction:</strong> <span class="${diag.prediction.includes("High") ? "high-risk" : ""}">${diag.prediction}</span></p>
+          <p><strong>Confidence Interval (95%):</strong> ${Math.round(diag.confidence_interval[0])}% - ${Math.round(diag.confidence_interval[1])}%</p>
+          <p><strong>Threshold:</strong> ${Math.round(diag.threshold_used)}%</p>
+          <p><strong>Diagnostic Certainty:</strong> ${diag.diagnostic_certainty}</p>
+          <p><strong>Clinical Note:</strong> ${diag.note}</p>
+        </div>
+      </div>`;
+  
+  // Add complication section if applicable
+  if (diag.confidence_interval[1] > diag.threshold_used) {
+    htmlContent += `
+      <div class="section">
+        <h3 class="section-title">Severity Assessment</h3>
+        <div class="result-box">
+          <p><strong>Risk of Complications:</strong> <span class="${comp.probability > 50 ? "high-risk" : "low-risk"}">${Math.round(comp.probability)}%</span></p>
+          <p><strong>Confidence Interval (95%):</strong> ${Math.round(comp.confidence_interval[0])}% - ${Math.round(comp.confidence_interval[1])}%</p>
+          <p><strong>Clinical Note:</strong> ${comp.note}</p>
+        </div>
+      </div>`;
+  }
+  
+  // Add explanation if available
+  if (explanationData) {
+    htmlContent += `
+      <div class="section">
+        <h3 class="section-title">Model Explanation</h3>
+        <p>This section explains how each feature contributed to the model's prediction.</p>`;
+    
+    // Add diagnosis explanation
+    htmlContent += `
+        <h4>Diagnosis Explanation</h4>
+        <p><strong>Base Value:</strong> ${explanationData.shap_values.diagnosis.find(item => item.Feature === "Base Value")["SHAP value"].toFixed(2)}</p>
+        <table>
+          <tr><th>Feature</th><th>SHAP Value</th></tr>`;
+    
+    explanationData.shap_values.diagnosis.forEach(item => {
+      if (item.Feature !== "Base Value" && item.Feature !== "Result") {
+        const valueClass = item["SHAP value"] > 0 ? "positive" : "negative";
+        htmlContent += `<tr><td>${item.Feature}</td><td class="${valueClass}">${item["SHAP value"].toFixed(4)}</td></tr>`;
+      }
+    });
+    
+    htmlContent += `
+          <tr><td><strong>Final Prediction</strong></td><td>${explanationData.shap_values.diagnosis.find(item => item.Feature === "Result")["SHAP value"].toFixed(2)}</td></tr>
+        </table>`;
+    
+    // Add complication explanation if available
+    if (explanationData.shap_values.complication) {
+      htmlContent += `
+        <h4>Complication Risk Explanation</h4>
+        <p><strong>Base Value:</strong> ${explanationData.shap_values.complication.find(item => item.Feature === "Base Value")["SHAP value"].toFixed(2)}</p>
+        <table>
+          <tr><th>Feature</th><th>SHAP Value</th></tr>`;
+      
+      explanationData.shap_values.complication.forEach(item => {
+        if (item.Feature !== "Base Value" && item.Feature !== "Result") {
+          const valueClass = item["SHAP value"] > 0 ? "positive" : "negative";
+          htmlContent += `<tr><td>${item.Feature}</td><td class="${valueClass}">${item["SHAP value"].toFixed(4)}</td></tr>`;
+        }
+      });
+      
+      htmlContent += `
+          <tr><td><strong>Final Prediction</strong></td><td>${explanationData.shap_values.complication.find(item => item.Feature === "Result")["SHAP value"].toFixed(2)}</td></tr>
+        </table>`;
+    }
+    
+    htmlContent += `</div>`;
+  }
+  
+  htmlContent += `
+      <div class="footer">
+        <p>This report was generated by the Appendicitis Diagnostic Tool.</p>
+        <p>For clinical use only. Always correlate with clinical findings.</p>
+      </div>
+    </body>
+    </html>`;
+  
+  // Create a Blob and download it
+  const blob = new Blob([htmlContent], { type: 'text/html' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `Appendicitis_Report_${now.getTime()}.html`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
