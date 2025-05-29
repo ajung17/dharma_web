@@ -108,7 +108,7 @@ label .no-capitalize {
   transform: scale(1.05);
 }
 .btn-secondary {
-  background: linear-gradient(45deg, #6b7280, #9ca3af);
+  background: #5DA7D5;
   border: none;
   padding: 14px 25px;
   font-size: 18px;
@@ -151,7 +151,7 @@ label .no-capitalize {
   padding: 20px;
   border: 1px solid #888;
   width: 80%;
-  max-width: 900px; /* Increased to accommodate side-by-side tables */
+  max-width: 900px; 
 }
 
 .modal-header {

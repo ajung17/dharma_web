@@ -389,7 +389,7 @@ function downloadReport() {
   if (diag.confidence_interval[1] > diag.threshold_used) {
     htmlContent += `
       <div class="section">
-        <h3 class="section-title">Severity Assessment</h3>
+        <h3 class="section-title">Severity Assessments</h3>
         <div class="result-box">
           <p><strong>Risk of Complications:</strong> <span class="${comp.probability > 50 ? "high-risk" : "low-risk"}">${Math.round(comp.probability)}%</span></p>
           <p><strong>Confidence Interval (95%):</strong> ${Math.round(comp.confidence_interval[0])}% - ${Math.round(comp.confidence_interval[1])}%</p>
