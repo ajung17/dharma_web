@@ -61,11 +61,13 @@ h1 {
   margin-bottom: 20px;
   color: #dddddd;
 }
+
 .form-group label {
   text-transform: uppercase;
   color: #ffff;
   padding-left: 5px;
 }
+
 
 label .no-capitalize {
   text-transform: none;

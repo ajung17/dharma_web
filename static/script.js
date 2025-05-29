@@ -341,12 +341,12 @@ function downloadReport() {
         }
         th, td {
           border: 1px solid #ddd;
-          padding: 8px;
+          padding: 8px;   
           text-align: left;
         }
         th {
           background-color: #f2f2f2;
-        }
+        }     
         .positive {
           color: #d9534f;
         }
