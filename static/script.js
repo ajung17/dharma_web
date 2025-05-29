@@ -6,7 +6,6 @@ $(document).ready(function () {
   const infoBtn = document.getElementById("infoButton");
   const docCloseBtn = docModal.getElementsByClassName("close-modal")[0];
 
-
   // Explanation modal functionality
   const explainModal = document.getElementById("explainModal");
   const explainBtn = document.getElementById("explainButton");
@@ -168,7 +167,6 @@ $(document).ready(function () {
 
 // Function to render SHAP tables in the explanation modal
 function renderShapTables(shapValues) {
-
   let html = '<div class="shap-tables-container">';
 
   for (const type of ["diagnosis", "complication"]) {
@@ -226,8 +224,8 @@ function renderShapTables(shapValues) {
         <button id="downloadReport" class="download-btn">Download Full Report</button>
       </div>
     `);
-    
-    $("#downloadReport").on("click", downloadReport);
+
+  $("#downloadReport").on("click", downloadReport);
   $("#explainModal").show(); // Show the explanation modal
 }
 
@@ -265,18 +263,18 @@ function downloadReport() {
 
   // Create a formatted date string
   const now = new Date();
-  const dateStr = now.toLocaleDateString('en-US', {
-    year: 'numeric', 
-    month: 'long', 
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
+  const dateStr = now.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
   });
 
   // Extract diagnosis and complication data
   const diag = predictionData.diagnosis;
   const comp = predictionData.complication;
-  
+
   // Create HTML content for the report
   let htmlContent = `
     <!DOCTYPE html>
@@ -376,76 +374,104 @@ function downloadReport() {
       <div class="section">
         <h3 class="section-title">Diagnosis Results</h3>
         <div class="result-box">
-          <p><strong>Dharma Score:</strong> <span class="highlight">${Math.round(diag.dharma_score)}%</span></p>
-          <p><strong>Prediction:</strong> <span class="${diag.prediction.includes("High") ? "high-risk" : ""}">${diag.prediction}</span></p>
-          <p><strong>Confidence Interval (95%):</strong> ${Math.round(diag.confidence_interval[0])}% - ${Math.round(diag.confidence_interval[1])}%</p>
+          <p><strong>Dharma Score:</strong> <span class="highlight">${Math.round(
+            diag.dharma_score
+          )}%</span></p>
+          <p><strong>Prediction:</strong> <span class="${
+            diag.prediction.includes("High") ? "high-risk" : ""
+          }">${diag.prediction}</span></p>
+          <p><strong>Confidence Interval (95%):</strong> ${Math.round(
+            diag.confidence_interval[0]
+          )}% - ${Math.round(diag.confidence_interval[1])}%</p>
           <p><strong>Threshold:</strong> ${Math.round(diag.threshold_used)}%</p>
-          <p><strong>Diagnostic Certainty:</strong> ${diag.diagnostic_certainty}</p>
+          <p><strong>Diagnostic Certainty:</strong> ${
+            diag.diagnostic_certainty
+          }</p>
           <p><strong>Clinical Note:</strong> ${diag.note}</p>
         </div>
       </div>`;
-  
+
   // Add complication section if applicable
   if (diag.confidence_interval[1] > diag.threshold_used) {
     htmlContent += `
       <div class="section">
         <h3 class="section-title">Severity Assessments</h3>
         <div class="result-box">
-          <p><strong>Risk of Complications:</strong> <span class="${comp.probability > 50 ? "high-risk" : "low-risk"}">${Math.round(comp.probability)}%</span></p>
-          <p><strong>Confidence Interval (95%):</strong> ${Math.round(comp.confidence_interval[0])}% - ${Math.round(comp.confidence_interval[1])}%</p>
+          <p><strong>Risk of Complications:</strong> <span class="${
+            comp.probability > 50 ? "high-risk" : "low-risk"
+          }">${Math.round(comp.probability)}%</span></p>
+          <p><strong>Confidence Interval (95%):</strong> ${Math.round(
+            comp.confidence_interval[0]
+          )}% - ${Math.round(comp.confidence_interval[1])}%</p>
           <p><strong>Clinical Note:</strong> ${comp.note}</p>
         </div>
       </div>`;
   }
-  
+
   // Add explanation if available
   if (explanationData) {
     htmlContent += `
       <div class="section">
         <h3 class="section-title">Model Explanation</h3>
         <p>This section explains how each feature contributed to the model's prediction.</p>`;
-    
+
     // Add diagnosis explanation
     htmlContent += `
         <h4>Diagnosis Explanation</h4>
-        <p><strong>Base Value:</strong> ${explanationData.shap_values.diagnosis.find(item => item.Feature === "Base Value")["SHAP value"].toFixed(2)}</p>
+        <p><strong>Base Value:</strong> ${explanationData.shap_values.diagnosis
+          .find((item) => item.Feature === "Base Value")
+          ["SHAP value"].toFixed(2)}</p>
         <table>
           <tr><th>Feature</th><th>SHAP Value</th></tr>`;
-    
-    explanationData.shap_values.diagnosis.forEach(item => {
+
+    explanationData.shap_values.diagnosis.forEach((item) => {
       if (item.Feature !== "Base Value" && item.Feature !== "Result") {
         const valueClass = item["SHAP value"] > 0 ? "positive" : "negative";
-        htmlContent += `<tr><td>${item.Feature}</td><td class="${valueClass}">${item["SHAP value"].toFixed(4)}</td></tr>`;
+        htmlContent += `<tr><td>${
+          item.Feature
+        }</td><td class="${valueClass}">${item["SHAP value"].toFixed(
+          4
+        )}</td></tr>`;
       }
     });
-    
+
     htmlContent += `
-          <tr><td><strong>Final Prediction</strong></td><td>${explanationData.shap_values.diagnosis.find(item => item.Feature === "Result")["SHAP value"].toFixed(2)}</td></tr>
+          <tr><td><strong>Final Prediction</strong></td><td>${explanationData.shap_values.diagnosis
+            .find((item) => item.Feature === "Result")
+            ["SHAP value"].toFixed(2)}</td></tr>
         </table>`;
-    
+
     // Add complication explanation if available
     if (explanationData.shap_values.complication) {
       htmlContent += `
         <h4>Complication Risk Explanation</h4>
-        <p><strong>Base Value:</strong> ${explanationData.shap_values.complication.find(item => item.Feature === "Base Value")["SHAP value"].toFixed(2)}</p>
+        <p><strong>Base Value:</strong> ${explanationData.shap_values.complication
+          .find((item) => item.Feature === "Base Value")
+          ["SHAP value"].toFixed(2)}</p>
         <table>
           <tr><th>Feature</th><th>SHAP Value</th></tr>`;
-      
-      explanationData.shap_values.complication.forEach(item => {
+
+      explanationData.shap_values.complication.forEach((item) => {
         if (item.Feature !== "Base Value" && item.Feature !== "Result") {
           const valueClass = item["SHAP value"] > 0 ? "positive" : "negative";
-          htmlContent += `<tr><td>${item.Feature}</td><td class="${valueClass}">${item["SHAP value"].toFixed(4)}</td></tr>`;
+          htmlContent += `<tr><td>${
+            item.Feature
+          }</td><td class="${valueClass}">${item["SHAP value"].toFixed(
+            4
+          )}</td></tr>`;
         }
       });
-      
+
       htmlContent += `
-          <tr><td><strong>Final Prediction</strong></td><td>${explanationData.shap_values.complication.find(item => item.Feature === "Result")["SHAP value"].toFixed(2)}</td></tr>
+          <tr><td><strong>Final Prediction</strong></td><td>${explanationData.shap_values.complication
+            .find((item) => item.Feature === "Result")
+            ["SHAP value"].toFixed(2)}</td></tr>
         </table>`;
     }
-    
+
     htmlContent += `</div>`;
   }
-  
+
   htmlContent += `
       <div class="footer">
         <p>This report was generated by the Appendicitis Diagnostic Tool.</p>
@@ -453,11 +479,11 @@ function downloadReport() {
       </div>
     </body>
     </html>`;
-  
+
   // Create a Blob and download it
-  const blob = new Blob([htmlContent], { type: 'text/html' });
+  const blob = new Blob([htmlContent], { type: "text/html" });
   const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
+  const a = document.createElement("a");
   a.href = url;
   a.download = `Appendicitis_Report_${now.getTime()}.html`;
   document.body.appendChild(a);

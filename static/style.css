@@ -64,6 +64,7 @@ h1 {
 .form-group label {
   text-transform: uppercase;
   color: #ffff;
+  padding-left: 5px;
 }
 
 label .no-capitalize {
@@ -108,7 +109,7 @@ label .no-capitalize {
   transform: scale(1.05);
 }
 .btn-secondary {
-  background: #5DA7D5;
+  background: #5da7d5;
   border: none;
   padding: 14px 25px;
   font-size: 18px;
@@ -151,7 +152,7 @@ label .no-capitalize {
   padding: 20px;
   border: 1px solid #888;
   width: 80%;
-  max-width: 900px; 
+  max-width: 900px;
 }
 
 .modal-header {
