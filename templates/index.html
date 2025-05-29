@@ -70,7 +70,7 @@
           <div class="form-group">
             <label for="Nausea">Nausea</label>
             <select class="form-control" id="Nausea" required>
-              <option value="1">Select option</option>
+              <option value="0">Select option</option>
               <option value="1">Yes</option>
               <option value="0">No</option>
             </select>
@@ -79,7 +79,7 @@
           <div class="form-group">
             <label for="Loss_of_Appetite">Loss of Appetite</label>
             <select class="form-control" id="Loss_of_Appetite" required>
-              <option value="1">Select option</option>
+              <option value="0">Select option</option>
               <option value="1">Yes</option>
               <option value="0">No</option>
             </select>
@@ -102,7 +102,7 @@
             <input
               type="number"
               step="any"
-              value="6.2"
+              value="10.0"
               class="form-control"
               id="WBC_Count"
               onfocus="clearDefaultValue(this)"
@@ -125,7 +125,7 @@
             <label for="Neutrophil_Percentage">Neutrophil Percentage (%)</label>
             <input
               type="number"
-              value="61"
+              value="75.0"
               step="any"
               class="form-control"
               id="Neutrophil_Percentage"
@@ -140,7 +140,7 @@
             <input
               type="number"
               step="any"
-              value="13.0"
+              value="15.0"
               class="form-control"
               id="CRP"
               onfocus="clearDefaultValue(this)"
@@ -163,7 +163,7 @@
             <input
               type="number"
               step="any"
-              value="0"
+              value="6.0"
               class="form-control"
               id="Appendix_Diameter"
               onfocus="clearDefaultValue(this)"
@@ -173,7 +173,7 @@
           <div class="form-group">
             <label for="Free_Fluids">Free Fluids</label>
             <select class="form-control" id="Free_Fluids" required>
-              <option value="1">Select option</option>
+              <option value="0">Select option</option>
               <option value="1">Yes</option>
               <option value="0">No</option>
             </select>
@@ -204,7 +204,7 @@
         <div class="modal-content">
           <div class="modal-header">
             <span class="close-modal">&times;</span>
-            <h2>Pediatric Appendicitis AI Prediction Tool</h2>
+            <h2>Dharma: Appendicitis Model</h2>
           </div>
           <div class="modal-body">
             <!-- Section buttons -->
@@ -223,59 +223,62 @@
             <!-- Sections -->
             <div id="about" class="section-content">
               <p>
-                This tool uses AI to predict the likelihood of appendicitis in
-                pediatric patients based on clinical findings and laboratory
-                values.
+                Dharma is a novel, interpretable machine learning based clinical
+                decision support tool designed to address the diagnostic and
+                prognostic challenges of pediatric appendicitis by integrating
+                easily obtainable clinical, laboratory, and radiological data
+                into a unified, real-time predictive framework.
               </p>
 
-              <h3>About the Model</h3>
-              <p>
-                The AI model analyzes multiple clinical parameters to calculate
-                a Dharma Score, which indicates the probability of appendicitis.
-                The model was trained on data from pediatric patients and
-                validated across multiple clinical settings.
-              </p>
-
-              <h3>Input Parameters</h3>
-              <ul>
-                <li>
-                  <strong>Nausea:</strong> Presence of nausea symptom (Yes/No)
-                </li>
-                <li>
-                  <strong>Loss of Appetite:</strong> Presence of anorexia
-                  (Yes/No)
-                </li>
-                <li>
-                  <strong>Peritonitis:</strong> Clinical signs of peritoneal
-                  inflammation (None/Local/Generalized)
-                </li>
-                <li>
-                  <strong>WBC Count:</strong> White blood cell count (×10³ per
-                  μL)
-                </li>
-                <li>
-                  <strong>Body Temperature:</strong> Patient's temperature in
-                  Celsius
-                </li>
-                <li>
-                  <strong>Neutrophil Percentage:</strong> Percentage of
-                  neutrophils in differential
-                </li>
-                <li><strong>CRP:</strong> C-reactive protein level in mg/L</li>
-                <li>
-                  <strong>Ketones in Urine:</strong> Level of ketones detected
-                  in urinalysis
-                </li>
-                <li>
-                  <strong>Appendix Diameter:</strong> Ultrasound measurement in
-                  millimeters
-                </li>
-                <li>
-                  <strong>Free Fluids:</strong> Presence of free fluid on
-                  imaging (Yes/No)
-                </li>
-              </ul>
+              <table>
+                <caption>List of Features and Their Arrangement</caption>
+                <thead>
+                  <tr>
+                    <th>Diagnosis</th>
+                    <th>Complications</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Nausea</td>
+                    <td>Nausea</td>
+                  </tr>
+                  <tr>
+                    <td>Appetite Loss</td>
+                    <td>Appetite Loss</td>
+                  </tr>
+                  <tr>
+                    <td>Peritonitis</td>
+                    <td>Peritonitis</td>
+                  </tr>
+                  <tr>
+                    <td>WBC Count</td>
+                    <td>Urinary Ketones</td>
+                  </tr>
+                  <tr>
+                    <td>Neutrophil Percentage</td>
+                    <td>Free Fluids</td>
+                  </tr>
+                  <tr>
+                    <td>CRP</td>
+                    <td>CRP</td>
+                  </tr>
+                  <tr>
+                    <td>Urinary Ketones</td>
+                    <td>WBC Count</td>
+                  </tr>
+                  <tr>
+                    <td>Appendix Diameter</td>
+                    <td>Body Temperature</td>
+                  </tr>
+                  <tr>
+                    <td>Free Fluids</td>
+                    <td>Appendix Diameter</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
+
 
             <div id="evidence" class="section-content" style="display: none">
               <h3>Evidence & Validation</h3>
