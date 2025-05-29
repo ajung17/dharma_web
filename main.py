@@ -22,7 +22,7 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 @app.get("/", response_class=HTMLResponse)
 async def read_index(request: Request):
-    return templates.TemplateResponse("1index.html", {"request": request})
+    return templates.TemplateResponse("index.html", {"request": request})
 
 # CORS Middleware
 origins=[]
@@ -72,6 +72,7 @@ def CI95(model,x_predict):
     se=std_prob/np.sqrt(555)
     lower_ci=max(0,mean_prob-1.96*se)
     upper_ci=min(1,mean_prob+1.96*se)
+    
 
   
    
@@ -115,7 +116,7 @@ async def predict(data: PatientData):
 
         # Threshold determination
         appendix_diameter = df['Appendix_Diameter'].iloc[0]
-        threshold_diag = 0.30 if appendix_diameter == 0 else 0.64  # 30% if not visualized, 64% otherwise
+        threshold_diag = 0.64 if appendix_diameter != 0 else 0.3
         threshold_comp = 0.52  # 52% for complication prediction
 
         # Predictions
@@ -130,40 +131,59 @@ async def predict(data: PatientData):
 
         # Certainty assessment based on CI width
         ci_width_diag = upper_ci_diag - lower_ci_diag
-        ci_width_comp = upper_ci_comp - lower_ci_comp
+        
 
         # Diagnostic certainty based on CI
         diag_note = ""
         comp_note=""
-        if lower_ci_diag >= threshold_diag:
-            diag_certainty = "High Confidence"
-            pred_diag="High Likelihood of acute appendicitis"
-            diag_note="Manage in line with appendicitis protocol."
+        if appendix_diameter !=0:
+            if lower_ci_diag >= 0.64:
+                diag_certainty = "High confidence"
+                pred_diag="High likelihood of acute appendicitis."
+                diag_note="Manage in line with appendicitis protocol." 
             # Check if the lower CI is close to the threshold
-            if lower_ci_diag - threshold_diag < 0.01:  
-                diag_note = "Close to threshold, consider clinical correlation."
+                if lower_ci_diag - 0.64 < 0.01:  
+                    diag_note = "Close to threshold, consider clinical correlation."
         # Check if the upper CI is close to the threshold
-        elif upper_ci_diag < threshold_diag:
-            diag_certainty = "High Confidence"
-            pred_diag="Low Likelihood of acute appendicitis"
-            diag_note="Explore alternative diagnoses."
-            # Check if the upper CI is close to the threshold
-            if threshold_diag  - upper_ci_diag < 0.01:  
-                diag_note = "Close to threshold, consider clinical correlation."
+            elif upper_ci_diag < 0.64:
+                diag_certainty = "High confidence"
+                pred_diag="Low likelihood of acute appendicitis."
+                diag_note="Explore alternative diagnoses."
+                # Check if the upper CI is close to the threshold
+                if 0.64 - upper_ci_diag < 0.01:  
+                    diag_note = "Close to threshold, consider clinical correlation."
         # Check if the CI width is small
-        elif ci_width_diag <= 0.1:
-            diag_certainty = "Stable Prediction"
-            pred_diag="Possible acute appendicitis"
-            if threshold_diag == 0.30:
-                diag_note= "Consider imaging for confirmation."
-            else:
-                diag_note= "Consider clinical correlation and/or CT for Confirmation."
+            elif ci_width_diag <= 0.1:
+                diag_certainty = "Stable prediction"
+                pred_diag="Possible acute appendicitis."
+                diag_note="Consider clinical correlation."
         # If the CI width is large
+            elif ci_width_diag>0.1:
+                pred_diag="Possible acute appendicitis."
+                diag_certainty = "Unstable prediction"
+                diag_note="Consider CECT/MRI-Abdomen for confirmation."
+        # If appendix diameter is zero        
         else:
-            pred_diag="Possible acute appendicitis"
-            diag_certainty = "Unstable Prediction"
-            diag_note="Specialist Evaluation Recommended."
-        
+            if lower_ci_diag >= 0.47:
+                diag_certainty = "High confidence"
+                pred_diag="High likelihood of acute appendicitis."
+                diag_note="Manage in line with appendicitis protocol." 
+                if lower_ci_diag - 0.47 < 0.01:  
+                    diag_note = "Close to threshold, consider clinical correlation."
+            elif upper_ci_diag <0.3:
+                diag_certainty = "High confidence"
+                pred_diag="Low likelihood of acute appendicitis."
+                diag_note="Explore alternative diagnoses."
+                if 0.3 - upper_ci_diag < 0.01:  
+                    diag_note = "Close to threshold, consider clinical correlation."
+            elif lower_ci_diag >=0.37:
+                diag_certainty = "Moderate confidence"
+                pred_diag="Probable acute appendicitis."
+                diag_note="Consider pediatric surgery evalutation and serial physical examinations."
+            else:
+                diag_certainty = "Low confidence"
+                pred_diag="Uncertain diagnosis, further evaluation needed."
+                diag_note="If ultrasound is inconclusive, consider CECT/MRI for further evaluation."
         # Prognostic certainty based on CI
         comp_note = ""
         if lower_ci_comp >= threshold_comp:

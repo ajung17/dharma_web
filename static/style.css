@@ -65,6 +65,7 @@ h1 {
   text-transform: uppercase;
   color: #ffff;
 }
+
 label .no-capitalize {
   text-transform: none;
 }
@@ -79,6 +80,7 @@ label .no-capitalize {
   transition: 0.3s;
   height: 50px;
 }
+
 .form-control::placeholder {
   color: #656577;
   opacity: 0.7;
@@ -123,7 +125,7 @@ label .no-capitalize {
   transform: scale(1.05);
 }
 .hidden {
-    display: none !important;
+  display: none !important;
 }
 .positive {
   color: green;
@@ -184,33 +186,33 @@ label .no-capitalize {
   color: #90ee90;
 }
 th {
-    text-align: inherit;
-    color: wheat;
+  text-align: inherit;
+  color: wheat;
 }
-td{
-    color: wheat;
-    justify-content: flex-end;
+td {
+  color: wheat;
+  justify-content: flex-end;
 }
 .negative {
   color: #f08080;
 }
 .base-value-row {
   display: flex;
-  justify-content:space-evenly; 
+  justify-content: space-evenly;
   font-size: 1rem;
   margin-bottom: 10px; /* space below */
   color: wheat;
 }
-.final-prediction{
-color: white;
+.final-prediction {
+  color: white;
 }
 .base-value-label {
   /* you can style the label here */
   min-width: 120px; /* fixed width so values line up */
   font-weight: bold;
 }
-.base-value-number{
-padding-right: 50px;
+.base-value-number {
+  padding-right: 50px;
 }
 /* New styles for side-by-side tables */
 .shap-tables-container {
@@ -392,7 +394,7 @@ padding-right: 50px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.2);
   padding-bottom: 15px;
   margin-bottom: 20px;
-    display: flex;
+  display: flex;
   justify-content: center;
 }
 
