@@ -219,167 +219,84 @@
                 Creator
               </button>
             </div>
-            <div
-              id="about"
-              class="section-content"
-              >
+            <div id="about" class="section-content">
               <p>
                 Dharma is a novel, interpretable machine learning based clinical
-                decision support tool designed to address the diagnostic and
+                decision support system, designed to address the diagnostic and
                 prognostic challenges of pediatric appendicitis by integrating
                 easily obtainable clinical, laboratory, and radiological data
                 into a unified, real-time predictive framework.
               </p>
 
-              <table
-                style="width: 100%; border-collapse: collapse; margin-top: 10px"
-              >
-                <caption
-                  style="
-                    font-weight: bold;
-                    font-size: 1.1em;
-                    margin-bottom: 10px;
-                    caption-side: top;
-                    text-align: left;
-                    color: wheat;
-                  "
-                >
-                  List of Features:
-                </caption>
-                <a href="https://mail.google.com/mail/u/0/#inbox" target="_blank">
-                  <i class="fab fa-linkedin"></i>
-                </a>
-                <thead>
-                  <tr>
-                    <th
-                      style="
-                        text-align: left;
-                        padding: 10px;
-                        border: 1px solid #ddd;
-                      "
-                    >
-                      Diagnosis
-                    </th>
-                    <th
-                      style="
-                        text-align: left;
-                        padding: 10px;
-                        border: 1px solid #ddd;
-                      "
-                    >
-                      Severity Assessment
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td style="padding: 10px; border: 1px solid #ddd">
-                      Nausea
-                    </td>
-                    <td style="padding: 10px; border: 1px solid #ddd">
-                      Nausea
-                    </td>
-                  </tr>
-                  <tr>
-                    <td style="padding: 10px; border: 1px solid #ddd">
-                      Appetite Loss
-                    </td>
-                    <td style="padding: 10px; border: 1px solid #ddd">
-                      Appetite Loss
-                    </td>
-                  </tr>
-                  <tr>
-                    <td style="padding: 10px; border: 1px solid #ddd">
-                      Peritonitis
-                    </td>
-                    <td style="padding: 10px; border: 1px solid #ddd">
-                      Peritonitis
-                    </td>
-                  </tr>
-                  <tr>
-                    <td style="padding: 10px; border: 1px solid #ddd">
-                      WBC Count
-                    </td>
-                    <td style="padding: 10px; border: 1px solid #ddd">
-                      Urinary Ketones
-                    </td>
-                  </tr>
-                  <tr>
-                    <td style="padding: 10px; border: 1px solid #ddd">
-                      Neutrophil Percentage
-                    </td>
-                    <td style="padding: 10px; border: 1px solid #ddd">
-                      Free Fluids
-                    </td>
-                  </tr>
-                  <tr>
-                    <td style="padding: 10px; border: 1px solid #ddd">CRP</td>
-                    <td style="padding: 10px; border: 1px solid #ddd">CRP</td>
-                  </tr>
-                  <tr>
-                    <td style="padding: 10px; border: 1px solid #ddd">
-                      Urinary Ketones
-                    </td>
-                    <td style="padding: 10px; border: 1px solid #ddd">
-                      WBC Count
-                    </td>
-                  </tr>
-                  <tr>
-                    <td style="padding: 10px; border: 1px solid #ddd">
-                      Appendix Diameter
-                    </td>
-                    <td style="padding: 10px; border: 1px solid #ddd">
-                      Body Temperature
-                    </td>
-                  </tr>
-                  <tr>
-                    <td style="padding: 10px; border: 1px solid #ddd">
-                      Free Fluids
-                    </td>
-                    <td style="padding: 10px; border: 1px solid #ddd">
-                      Appendix Diameter
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+              <p>
+                Note: Input 0 if the value is not available or not applicable.
+              </p>
+              <p>
+                <strong>To be used by healthcare professionals only.</strong>
+              </p>
             </div>
 
             <div id="evidence" class="section-content" style="display: none">
-              <h3>Evidence & Validation</h3>
               <p>
-                The model was rigorously validated using clinical data from
-                multiple hospitals. It showed high sensitivity and specificity
-                in identifying pediatric appendicitis.
+                LITERATURE: doi:
+                <a
+                  href="https://doi.org/10.1101/2025.05.27.25328468"
+                  target="_blank"
+                  >10.1101/2025.05.27.25328468</a
+                ><br />
+                EXPLORE Dharma:
+                <a
+                  href="https://github.com/ajung17/Dharma-AppendicitisModel"
+                  target="_blank"
+                  >GitHub Repository Link</a
+                >
               </p>
-              <ul>
-                <li>Validated on over 1,000 pediatric cases.</li>
-                <li>Demonstrated an accuracy of 92% in clinical trials.</li>
-                <li>Peer-reviewed in multiple journals.</li>
-              </ul>
+
               <p>
-                For more detailed validation data and references, please consult
-                the documentation or contact the developer.
+                PERFORMANCE METRICS:<br />
+                <strong>Threshold: 64%</strong><br />
+                AUC-ROC: 0.97-0.98 <br />
+                Sensitivity: 89%-95% <br />
+                Specificity: 88%-98% <br />
+                Positive Predictive Value: 93%-99% <br />
+                Negative Predictive Value: 86%-91% <br />
+              </p>
+              <p>
+                <strong>If appendix not visualized or USG unavailable:</strong
+                ><br />
+                AUC-ROC: 0.95<br />
+                <strong>Threshold: 47% | High Likelihood</strong><br />
+                Specificity: 97% | PPV: 90%<br />
+                <strong>Threshold: 37% | Probable</strong><br />
+                Specificity: 92% | NPV: 93%<br />
+                <strong>Threshold: 30% | Possible</strong><br />
+                Sensitivity: 92%<br />
+                <strong>Less than 30%: Low Likelihood</strong><br />
+                NPV: 95%
               </p>
             </div>
 
             <div id="creator" class="section-content" style="display: none">
-              <h3>Creator</h3>
               <p>
-                This AI tool was developed by the DHARMA research team dedicated
-                to improving pediatric appendicitis diagnosis.
+                <strong>Conceptualized, Designed, and Developed by:</strong
+                ><br />
+                <strong>Dr. Anup Thapa, MBBS</strong>
+                <br />
               </p>
               <p>
-                Contact:
-                <a href="mailto:developer@example.com" style="color: #ccc"
-                  >developer@example.com</a
-                ><br />
-                Website:
-                <a
-                  href="https://dharma.example.com"
-                  target="_blank"
-                  style="color: #ccc"
-                  >https://dharma.example.com</a
-                >
+                Sincere gratitude to the team of DharmaAI and my dear friends:
+              </p>
+              <p>
+                <strong>Er. Subash Pahari</strong>:
+                <strong>Web-app Development and Deployment</strong><br />
+                Thank you for introducing me to the wonders of coding and AI,
+                and for your invaluable mentorship and support.<br />
+                You are not just a great friend, but also a guiding force in
+                this project.
+              </p>
+              <p>
+                <strong>Mr. Amrit Neupane</strong>:
+                <strong>Logo Design | UI/UX Design</strong>
               </p>
             </div>
           </div>
