@@ -133,6 +133,31 @@ label .no-capitalize {
 .positive {
   color: red;
 }
+.icon-link {
+  padding-left: 8px;
+  font-size: 1.2em;
+  text-decoration: none;
+}
+
+.icon-link.linkedin i {
+  color: white;
+}
+
+.icon-link.instagram i {
+  background: radial-gradient(
+    circle at 30% 107%,
+    #fdf497 0%,
+    #fdf497 5%,
+    #fd5949 45%,
+    #d6249f 60%,
+    #285AEB 90%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-fill-color: transparent;
+}
+
 .modal {
   display: none;
   position: fixed;
