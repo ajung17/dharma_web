@@ -131,9 +131,6 @@ label .no-capitalize {
   display: none !important;
 }
 .positive {
-  color: green;
-}
-.negative {
   color: red;
 }
 .modal {
@@ -185,9 +182,6 @@ label .no-capitalize {
   margin-bottom: 1rem;
 }
 
-.positive {
-  color: #90ee90;
-}
 th {
   text-align: inherit;
   color: wheat;
@@ -197,7 +191,7 @@ td {
   justify-content: flex-end;
 }
 .negative {
-  color: #f08080;
+  color: green;
 }
 .base-value-row {
   display: flex;

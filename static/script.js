@@ -254,12 +254,27 @@ $(document).ready(function () {
     $("#" + sectionToShow).show();
   });
 });
-// Add this new function outside document.ready
 function downloadReport() {
   if (!predictionData) {
     alert("Please make a prediction first before downloading the report.");
     return;
   }
+
+  // Initialize jsPDF
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({
+    orientation: "portrait",
+    unit: "pt",
+    format: "a4",
+  });
+
+  // Set font and styling
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(12);
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const margin = 40;
+  const maxWidth = pageWidth - 2 * margin;
+  let y = margin;
 
   // Create a formatted date string
   const now = new Date();
@@ -275,220 +290,190 @@ function downloadReport() {
   const diag = predictionData.diagnosis;
   const comp = predictionData.complication;
 
-  // Create HTML content for the report
-  let htmlContent = `
-    <!DOCTYPE html>
-    <html>
-    <head>  
-      <title>Dharma AI</title>
-      <style>
-        body {
-          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-          line-height: 1.6;
-          color: #333;
-          max-width: 800px;
-          margin: 0 auto;
-          padding: 20px;
-        }
-        .header {
-          text-align: center;
-          margin-bottom: 30px;
-          border-bottom: 2px solid #0066cc;
-          padding-bottom: 10px;
-        }
-        .header h1 {
-          color: #0066cc;
-          margin-bottom: 5px;
-        }
-        .patient-info {
-          background-color: #f5f5f5;
-          padding: 15px;
-          border-radius: 5px;
-          margin-bottom: 20px;
-        }
-        .section {
-          margin-bottom: 25px;
-        }
-        .section-title {
-          color: #0066cc;
-          border-bottom: 1px solid #ddd;
-          padding-bottom: 5px;
-          margin-bottom: 15px;
-        }
-        .result-box {
-          border: 1px solid #ddd;
-          border-radius: 5px;
-          padding: 15px;
-          margin-bottom: 15px;
-          background-color: #f9f9f9;
-        }
-        .highlight {
-          font-weight: bold;
-          color: #0066cc;
-        }
-        .high-risk {
-          color: #d9534f;
-          font-weight: bold;
-        }
-        .low-risk {
-          color: #5cb85c;
-          font-weight: bold;
-        }
-        table {
-          width: 100%;
-          border-collapse: collapse;
-          margin: 15px 0;
-        }
-        th, td {
-          border: 1px solid #ddd;
-          padding: 8px;   
-          text-align: left;
-        }
-        th {
-          background-color: #f2f2f2;
-        }     
-        .positive {
-          color: #d9534f;
-        }
-        .negative {
-          color: #5cb85c;
-        }
-        .footer {
-          text-align: center;
-          margin-top: 30px;
-          font-size: 0.9em;
-          color: #777;
-        }
-      </style>
-    </head>
-    <body>
-      <div class="header">
-        <h1>Dharma: Appendicitis Model</h1>
-        <p>Generated on ${dateStr}</p>
-      </div>
-      
-      <div class="patient-info">
-        <h3>Patient Assessment Summary</h3>
-      </div>
-      
-      <div class="section">
-        <h3 class="section-title">Diagnosis Results</h3>
-        <div class="result-box">
-          <p><strong>Dharma Score:</strong> <span class="highlight">${Math.round(
-            diag.dharma_score
-          )}%</span></p>
-          <p><strong>Prediction:</strong> <span class="${
-            diag.prediction.includes("High") ? "high-risk" : ""
-          }">${diag.prediction}</span></p>
-          <p><strong>Confidence Interval (95%):</strong> ${Math.round(
-            diag.confidence_interval[0]
-          )}% - ${Math.round(diag.confidence_interval[1])}%</p>
-          <p><strong>Threshold:</strong> ${Math.round(diag.threshold_used)}%</p>
-          <p><strong>Diagnostic Certainty:</strong> ${
-            diag.diagnostic_certainty
-          }</p>
-          <p><strong>Clinical Note:</strong> ${diag.note}</p>
-        </div>
-      </div>`;
+  // Add Header
+  doc.setFontSize(18);
+  doc.setTextColor(0, 102, 204); // #0066cc
+  doc.text("Dharma: Appendicitis Model", pageWidth / 2, y, { align: "center" });
+  y += 20;
+  doc.setFontSize(10);
+  doc.setTextColor(51, 51, 51); // #333
+  doc.text(`Generated on ${dateStr}`, pageWidth / 2, y, { align: "center" });
+  y += 30;
+
+  // Patient Assessment Summary
+  doc.setFontSize(14);
+  doc.setTextColor(0, 102, 204);
+  doc.text("Patient Assessment Summary", margin, y);
+  y += 20;
+
+  // Diagnosis Results
+  doc.setFontSize(14);
+  doc.text("Diagnosis Results", margin, y);
+  y += 10;
+  doc.setLineWidth(1);
+  doc.setDrawColor(221, 221, 221); // #ddd
+  doc.line(margin, y, pageWidth - margin, y);
+  y += 15;
+
+  doc.setFontSize(12);
+  doc.setTextColor(51, 51, 51);
+  doc.text(`Dharma Score: ${Math.round(diag.dharma_score)}%`, margin, y);
+  y += 15;
+  doc.setTextColor(diag.prediction.includes("High") ? 217 : 51, diag.prediction.includes("High") ? 83 : 51, diag.prediction.includes("High") ? 79 : 51); // #d9534f or #333
+  doc.text(`Prediction: ${diag.prediction}`, margin, y);
+  y += 15;
+  doc.setTextColor(51, 51, 51);
+  doc.text(
+    `Confidence Interval (95%): ${Math.round(diag.confidence_interval[0])}% - ${Math.round(
+      diag.confidence_interval[1]
+    )}%`,
+    margin,
+    y
+  );
+  y += 15;
+  doc.text(`Threshold: ${Math.round(diag.threshold_used)}%`, margin, y);
+  y += 15;
+  doc.text(`Diagnostic Certainty: ${diag.diagnostic_certainty}`, margin, y);
+  y += 15;
+  doc.text(`Clinical Note: ${diag.note}`, margin, y, { maxWidth });
+  y += doc.getTextDimensions(`Clinical Note: ${diag.note}`, { maxWidth }).h + 15;
 
   // Add complication section if applicable
   if (diag.confidence_interval[1] > diag.threshold_used) {
-    htmlContent += `
-      <div class="section">
-        <h3 class="section-title">Severity Assessments</h3>
-        <div class="result-box">
-          <p><strong>Risk of Complications:</strong> <span class="${
-            comp.probability > 50 ? "high-risk" : "low-risk"
-          }">${Math.round(comp.probability)}%</span></p>
-          <p><strong>Confidence Interval (95%):</strong> ${Math.round(
-            comp.confidence_interval[0]
-          )}% - ${Math.round(comp.confidence_interval[1])}%</p>
-          <p><strong>Clinical Note:</strong> ${comp.note}</p>
-        </div>
-      </div>`;
+    doc.setFontSize(14);
+    doc.setTextColor(0, 102, 204);
+    doc.text("Severity Assessments", margin, y);
+    y += 10;
+    doc.setLineWidth(1);
+    doc.line(margin, y, pageWidth - margin, y);
+    y += 15;
+
+    doc.setFontSize(12);
+    doc.setTextColor(comp.probability > 50 ? 217 : 92, comp.probability > 50 ? 83 : 184, comp.probability > 50 ? 79 : 92); // #d9534f or #5cb85c
+    doc.text(`Risk of Complications: ${Math.round(comp.probability)}%`, margin, y);
+    y += 15;
+    doc.setTextColor(51, 51, 51);
+    doc.text(
+      `Confidence Interval (95%): ${Math.round(comp.confidence_interval[0])}% - ${Math.round(
+        comp.confidence_interval[1]
+      )}%`,
+      margin,
+      y
+    );
+    y += 15;
+    doc.text(`Clinical Note: ${comp.note}`, margin, y, { maxWidth });
+    y += doc.getTextDimensions(`Clinical Note: ${comp.note}`, { maxWidth }).h + 15;
   }
 
   // Add explanation if available
   if (explanationData) {
-    htmlContent += `
-      <div class="section">
-        <h3 class="section-title">Model Explanation</h3>
-        <p>This section explains how each feature contributed to the model's prediction.</p>`;
+    doc.setFontSize(14);
+    doc.setTextColor(0, 102, 204);
+    doc.text("Model Explanation", margin, y);
+    y += 10;
+    doc.line(margin, y, pageWidth - margin, y);
+    y += 15;
 
-    // Add diagnosis explanation
-    htmlContent += `
-        <h4>Diagnosis Explanation</h4>
-        <p><strong>Base Value:</strong> ${explanationData.shap_values.diagnosis
-          .find((item) => item.Feature === "Base Value")
-          ["SHAP value"].toFixed(2)}</p>
-        <table>
-          <tr><th>Feature</th><th>SHAP Value</th></tr>`;
+    doc.setFontSize(12);
+    doc.setTextColor(51, 51, 51);
+    doc.text(
+      "This section explains how each feature contributed to the model's prediction.",
+      margin,
+      y,
+      { maxWidth }
+    );
+    y += doc.getTextDimensions("This section explains...", { maxWidth }).h + 15;
 
+    // Diagnosis Explanation
+    doc.setFontSize(12);
+    doc.text("Diagnosis Explanation", margin, y);
+    y += 15;
+    const baseValue = explanationData.shap_values.diagnosis.find(
+      (item) => item.Feature === "Base Value"
+    )["SHAP value"].toFixed(2);
+    doc.text(`Base Value: ${baseValue}`, margin, y);
+    y += 20;
+
+    // Table Header
+    doc.setFillColor(242, 242, 242); // #f2f2f2
+    doc.rect(margin, y - 10, maxWidth, 20, "F");
+    doc.text("Feature", margin + 5, y);
+    doc.text("SHAP Value", pageWidth - margin - 100, y);
+    y += 15;
+
+    // Table Content
     explanationData.shap_values.diagnosis.forEach((item) => {
       if (item.Feature !== "Base Value" && item.Feature !== "Result") {
-        const valueClass = item["SHAP value"] > 0 ? "positive" : "negative";
-        htmlContent += `<tr><td>${
-          item.Feature
-        }</td><td class="${valueClass}">${item["SHAP value"].toFixed(
-          4
-        )}</td></tr>`;
+        doc.setTextColor(item["SHAP value"] > 0 ? 217 : 92, item["SHAP value"] > 0 ? 83 : 184, item["SHAP value"] > 0 ? 79 : 92); // #d9534f or #5cb85c
+        doc.text(item.Feature, margin + 5, y, { maxWidth: maxWidth - 100 });
+        doc.text(item["SHAP value"].toFixed(4), pageWidth - margin - 100, y);
+        y += 15;
       }
     });
 
-    htmlContent += `
-          <tr><td><strong>Final Prediction</strong></td><td>${explanationData.shap_values.diagnosis
-            .find((item) => item.Feature === "Result")
-            ["SHAP value"].toFixed(2)}</td></tr>
-        </table>`;
+    const finalPrediction = explanationData.shap_values.diagnosis
+      .find((item) => item.Feature === "Result")
+      ["SHAP value"].toFixed(2);
+    doc.setTextColor(51, 51, 51);
+    doc.text("Final Prediction", margin + 5, y);
+    doc.text(finalPrediction, pageWidth - margin - 100, y);
+    y += 20;
 
-    // Add complication explanation if available
+    // Complication Explanation
     if (explanationData.shap_values.complication) {
-      htmlContent += `
-        <h4>Complication Risk Explanation</h4>
-        <p><strong>Base Value:</strong> ${explanationData.shap_values.complication
-          .find((item) => item.Feature === "Base Value")
-          ["SHAP value"].toFixed(2)}</p>
-        <table>
-          <tr><th>Feature</th><th>SHAP Value</th></tr>`;
+      doc.setFontSize(12);
+      doc.text("Complication Risk Explanation", margin, y);
+      y += 15;
+      const compBaseValue = explanationData.shap_values.complication.find(
+        (item) => item.Feature === "Base Value"
+      )["SHAP value"].toFixed(2);
+      doc.text(`Base Value: ${compBaseValue}`, margin, y);
+      y += 20;
 
+      // Table Header
+      doc.setFillColor(242, 242, 242);
+      doc.rect(margin, y - 10, maxWidth, 20, "F");
+      doc.text("Feature", margin + 5, y);
+      doc.text("SHAP Value", pageWidth - margin - 100, y);
+      y += 15;
+
+      // Table Content
       explanationData.shap_values.complication.forEach((item) => {
         if (item.Feature !== "Base Value" && item.Feature !== "Result") {
-          const valueClass = item["SHAP value"] > 0 ? "positive" : "negative";
-          htmlContent += `<tr><td>${
-            item.Feature
-          }</td><td class="${valueClass}">${item["SHAP value"].toFixed(
-            4
-          )}</td></tr>`;
+          doc.setTextColor(item["SHAP value"] > 0 ? 217 : 92, item["SHAP value"] > 0 ? 83 : 184, item["SHAP value"] > 0 ? 79 : 92);
+          doc.text(item.Feature, margin + 5, y, { maxWidth: maxWidth - 100 });
+          doc.text(item["SHAP value"].toFixed(4), pageWidth - margin - 100, y);
+          y += 15;
         }
       });
 
-      htmlContent += `
-          <tr><td><strong>Final Prediction</strong></td><td>${explanationData.shap_values.complication
-            .find((item) => item.Feature === "Result")
-            ["SHAP value"].toFixed(2)}</td></tr>
-        </table>`;
+      const compFinalPrediction = explanationData.shap_values.complication
+        .find((item) => item.Feature === "Result")
+        ["SHAP value"].toFixed(2);
+      doc.setTextColor(51, 51, 51);
+      doc.text("Final Prediction", margin + 5, y);
+      doc.text(compFinalPrediction, pageWidth - margin - 100, y);
+      y += 20;
     }
-
-    htmlContent += `</div>`;
   }
 
-  htmlContent += `
-      <div class="footer">
-        <p>This report was generated by Dharma: Appendicitis Model [DharmaAI].</p>
-        <p>To be used by healthcare professionals only.</p>
-        
-      </div>
-    </body>
-    </html>`;
+  // Footer
+  doc.setFontSize(10);
+  doc.setTextColor(119, 119, 119); // #777
+  doc.text(
+    "This report was generated by the Appendicitis Diagnostic Tool.",
+    pageWidth / 2,
+    y,
+    { align: "center" }
+  );
+  y += 15;
+  doc.text(
+    "For clinical use only. Always correlate with clinical findings.",
+    pageWidth / 2,
+    y,
+    { align: "center" }
+  );
 
-  // Create a Blob and download it
-  const blob = new Blob([htmlContent], { type: "text/html" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `Appendicitis_Report_${now.getTime()}.html`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  // Download the PDF
+  doc.save(`Appendicitis_Report_${now.getTime()}.pdf`);
 }
