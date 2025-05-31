@@ -40,7 +40,7 @@ $(document).ready(function () {
       explainModal.style.display = "none";
     }
   };
-
+  const backendUrl = "";
   // Form submission handler
   $("#prediction-form").on("submit", function (event) {
     event.preventDefault(); // Prevent page reload
@@ -61,8 +61,8 @@ $(document).ready(function () {
     };
     const url =
       action === "predict"
-        ? "http://127.0.0.1:8000/predict"
-        : "http://127.0.0.1:8000/explanation";
+        ? `${backendUrl}/predict`
+        : `${backendUrl}/explanation`;
 
     $.ajax({
       url: url,
