@@ -84,7 +84,7 @@
           <div class="form-group">
             <label for="Nausea">Nausea</label>
             <select class="form-control" id="Nausea" required>
-              <option value="">Select option</option>
+              <option value="0">Select option</option>
               <option value="1">Yes</option>
               <option value="0">No</option>
             </select>
@@ -154,7 +154,7 @@
             <input
               type="number"
               step="any"
-              value="15.0"
+              value="0.0"
               class="form-control"
               id="CRP"
               onfocus="clearDefaultValue(this)"
@@ -177,7 +177,7 @@
             <input
               type="number"
               step="any"
-              value="6.0"
+              value="0.0"
               class="form-control"
               id="Appendix_Diameter"
               onfocus="clearDefaultValue(this)"
@@ -241,6 +241,13 @@
                 easily obtainable clinical, laboratory, and radiological data
                 into a unified, real-time predictive framework.
               </p>
+              <p><strong>SHAP Explanations:</strong>
+                <br />
+                The model uses SHAP (SHapley Additive exPlanations) values to interpret predictions. Each SHAP value 
+                quantifies the contribution of a specific input feature to the model’s output, relative to a base value. 
+                The base value represents the model’s expected output, 
+                and the sum of the SHAP values shows how much each feature pushes the prediction above or below this baseline.
+              </p>
 
               <p>
                 Note: Input 0 if the value is not available or not applicable.
@@ -286,7 +293,9 @@
                 <strong>Threshold: 30% | Possible</strong><br />
                 Sensitivity: 92%<br />
                 <strong>Less than 30%: Low Likelihood</strong><br />
-                NPV: 95%
+                NPV: 95%<br />
+                <strong>For Complications Prediction:</strong><br />
+                Sensitivity: 96% | NPV: 98%
               </p>
             </div>
             <div id="creator" class="section-content" style="display: none">
