@@ -13,16 +13,19 @@ import shap
 from functools import lru_cache
 from fastapi import Request
 from fastapi.responses import JSONResponse
-
+import os
+import uvicorn
 # Initialization of FastAPI
 app= FastAPI(title="Dharma:Pediatric Appendicitis Model API")
 
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=int(os.getenv("PORT", 8000)))
 # Root endpoint
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 @app.get("/", response_class=HTMLResponse)
 async def read_index(request: Request):
-    return templates.TemplateResponse("1index.html", {"request": request})
+    return templates.TemplateResponse("index.html", {"request": request})
 
 # CORS Middleware
 origins=[]
@@ -36,16 +39,16 @@ app.add_middleware(
 
 # Checking for data correctness
 class PatientData(BaseModel):
-    Nausea:Annotated[int, Field(ge=0, le=1, description="Nausea (0 = No, 1 = Yes)")]
-    Loss_of_Appetite: Annotated[int, Field(ge=0, le=1, description="Loss of Appetite (0 = No, 1 = Yes)")]
-    Peritonitis: Annotated[int, Field(ge=0, le=2, description="Peritonitis (0 = No, 1 = Localized, 2 = Generalized)")]
-    WBC_Count: float = Field(..., ge=0, le=100, description="White blood cell count (0 to 100)")
-    Neutrophil_Percentage: float = Field(..., ge=0, le=100, description="Neutrophil % (0 to 100)")
-    CRP: float = Field(..., ge=0, le=1000, description="C-reactive protein (0 to 1000)")
-    Ketones_in_Urine: Annotated[int, Field(ge=0, le=3, description="Ketones in urine (0 = No/Trace, 1 = 1+, 2 = 2+, 3 = 3+)")]
-    Appendix_Diameter: float = Field(..., ge=0, le=50, description="Appendix diameter in mm (0 to 50)")
-    Free_Fluids: Annotated[int, Field(ge=0, le=1, description="Free fluids (0 = No, 1 = Yes)")]
-    Body_Temperature: float = Field(..., ge=30, le=50, description="Body temperature in °C (30 to 50)")
+    Nausea:int
+    Loss_of_Appetite: int
+    Peritonitis: int
+    WBC_Count: float 
+    Neutrophil_Percentage: float 
+    CRP: float 
+    Ketones_in_Urine: int
+    Appendix_Diameter: float 
+    Free_Fluids: int
+    Body_Temperature: float 
 
 # Load the trained models
 dharmaDiag = load("DharmaDiag.joblib")
@@ -72,6 +75,7 @@ def CI95(model,x_predict):
     se=std_prob/np.sqrt(555)
     lower_ci=max(0,mean_prob-1.96*se)
     upper_ci=min(1,mean_prob+1.96*se)
+    
 
   
    
@@ -90,7 +94,7 @@ def CI95(model,x_predict):
 async def predict(data: PatientData):
     try:
        # Conversion of input to DataFrame
-        df = pd.DataFrame(data.dict)
+        df = pd.DataFrame([data.dict()])
         print("🔵 Received Payload:", df)
 
         # Defining of feature sets
@@ -115,7 +119,7 @@ async def predict(data: PatientData):
 
         # Threshold determination
         appendix_diameter = df['Appendix_Diameter'].iloc[0]
-        threshold_diag = 0.30 if appendix_diameter == 0 else 0.64  # 30% if not visualized, 64% otherwise
+        threshold_diag = 0.64 if appendix_diameter != 0 else 0.3
         threshold_comp = 0.52  # 52% for complication prediction
 
         # Predictions
@@ -130,40 +134,59 @@ async def predict(data: PatientData):
 
         # Certainty assessment based on CI width
         ci_width_diag = upper_ci_diag - lower_ci_diag
-        ci_width_comp = upper_ci_comp - lower_ci_comp
+        
 
         # Diagnostic certainty based on CI
         diag_note = ""
         comp_note=""
-        if lower_ci_diag >= threshold_diag:
-            diag_certainty = "High Certainty"
-            pred_diag="High Likelihood of acute appendicitis"
-            diag_note="Manage in line with appendicitis protocol."
+        if appendix_diameter !=0:
+            if lower_ci_diag >= 0.64:
+                diag_certainty = "High confidence"
+                pred_diag="High likelihood of acute appendicitis."
+                diag_note="Manage in line with appendicitis protocol." 
             # Check if the lower CI is close to the threshold
-            if lower_ci_diag - threshold_diag < 0.01:  
-                diag_note = "Close to threshold, consider clinical correlation."
+                if lower_ci_diag - 0.64 < 0.01:  
+                    diag_note = "Close to threshold, consider clinical correlation."
         # Check if the upper CI is close to the threshold
-        elif upper_ci_diag <= threshold_diag:
-            diag_certainty = "High Certainty"
-            pred_diag="Low Likelihood of acute appendicitis"
-            diag_note="Explore alternative diagnoses."
-            # Check if the upper CI is close to the threshold
-            if threshold_diag  - upper_ci_diag < 0.01:  
-                diag_note = "Close to threshold, consider clinical correlation."
+            elif upper_ci_diag < 0.64:
+                diag_certainty = "High confidence"
+                pred_diag="Low likelihood of acute appendicitis."
+                diag_note="Explore alternative diagnoses."
+                # Check if the upper CI is close to the threshold
+                if 0.64 - upper_ci_diag < 0.01:  
+                    diag_note = "Close to threshold, consider clinical correlation."
         # Check if the CI width is small
-        elif ci_width_diag <= 0.1:
-            diag_certainty = "Stable Prediction"
-            pred_diag="Possible acute appendicitis"
-            if threshold_diag == 0.30:
-                diag_note= "Consider imaging for confirmation."
-            else:
-                diag_note= "Consider clinical correlation and/or CT for Confirmation."
+            elif ci_width_diag <= 0.1:
+                diag_certainty = "Stable prediction"
+                pred_diag="Possible acute appendicitis."
+                diag_note="Consider clinical correlation."
         # If the CI width is large
+            elif ci_width_diag>0.1:
+                pred_diag="Possible acute appendicitis."
+                diag_certainty = "Unstable prediction"
+                diag_note="Consider CECT/MRI-Abdomen for confirmation."
+        # If appendix diameter is zero        
         else:
-            pred_diag="Possible acute appendicitis"
-            diag_certainty = "Unstable Prediction"
-            diag_note="Specialist Evaluation Recommended."
-        
+            if lower_ci_diag >= 0.47:
+                diag_certainty = "High confidence"
+                pred_diag="High likelihood of acute appendicitis."
+                diag_note="Manage in line with appendicitis protocol." 
+                if lower_ci_diag - 0.47 < 0.01:  
+                    diag_note = "Close to threshold, consider clinical correlation."
+            elif upper_ci_diag <0.3:
+                diag_certainty = "High confidence"
+                pred_diag="Low likelihood of acute appendicitis."
+                diag_note="Explore alternative diagnoses."
+                if 0.3 - upper_ci_diag < 0.01:  
+                    diag_note = "Close to threshold, consider clinical correlation."
+            elif lower_ci_diag >=0.37:
+                diag_certainty = "Moderate confidence"
+                pred_diag="Probable acute appendicitis."
+                diag_note="Consider pediatric surgery evalutation and serial physical examinations."
+            else:
+                diag_certainty = "Low confidence"
+                pred_diag="Uncertain diagnosis, further evaluation needed."
+                diag_note="If ultrasound is inconclusive, consider CECT/MRI for further evaluation."
         # Prognostic certainty based on CI
         comp_note = ""
         if lower_ci_comp >= threshold_comp:
@@ -179,13 +202,14 @@ async def predict(data: PatientData):
                 "confidence_interval": [round(lower_ci_diag * 100, 2), round(upper_ci_diag * 100, 2)],
                 "prediction": pred_diag,
                 "threshold_used": round(threshold_diag * 100, 2),
-                "certainty": diag_certainty,
+                "diagnostic_certainty": diag_certainty,
                 "note": diag_note
             },
             "complication": {
                 "probability": round(prob_comp * 100, 2),
                 "confidence_interval": [round(lower_ci_comp * 100, 2), round(upper_ci_comp * 100, 2)],
-                "note": comp_note
+                "note": comp_note,
+                "threshold": threshold_comp
             }
         }
 
@@ -220,22 +244,39 @@ async def explanation(data: PatientData):
         # SHAP values calculation
         shap_values_diag = explainer_diag().shap_values(df_diag)
         shap_values_comp = explainer_comp().shap_values(df_comp)
+       
         shap_diag_positive = shap_values_diag[0, :, 1] 
         shap_comp_positive = shap_values_comp[0, :, 1]
+  
         base_value_diag = explainer_diag().expected_value[1]
         base_value_comp = explainer_comp().expected_value[1]
 
-
         # Convert SHAP values to DataFrame for better readability
-        shap_df_diag = pd.DataFrame(shap_values_diag, columns=features_diag)
-        shap_df_comp = pd.DataFrame(shap_values_comp, columns=features_comp)
+        shap_df_diag = pd.DataFrame(shap_diag_positive, index=features_diag, columns=['SHAP value'])
+        shap_df_comp = pd.DataFrame(shap_comp_positive, index=features_comp, columns=['SHAP value'])    
+        shap_df_diag = shap_df_diag.sort_values("SHAP value", ascending=False)
+        shap_df_comp = shap_df_comp.sort_values("SHAP value", ascending=False)
+        # Add base values to the DataFrame
+        shap_df_diag.loc["Base Value"] = [base_value_diag]
+        shap_df_comp.loc["Base Value"] = [base_value_comp]
+        shap_df_diag.loc['Result']= [shap_df_diag["SHAP value"].sum()]
+        shap_df_comp.loc['Result']= [shap_df_comp["SHAP value"].sum()]
+        shap_df_diag['Feature'] = shap_df_diag.index
+        shap_df_comp['Feature'] = shap_df_comp.index
+
+        shap_df_diag = shap_df_diag.reset_index(drop=True)
+        shap_df_comp = shap_df_comp.reset_index(drop=True)
+        shap_df_diag = shap_df_diag[['Feature', 'SHAP value']]
+        shap_df_comp = shap_df_comp[['Feature', 'SHAP value']]
+        json_diag = shap_df_diag.to_dict(orient="records")
+        json_comp = shap_df_comp.to_dict(orient="records")
+        
 
         return {
             "shap_values": {
-                "diagnosis": shap_df_diag.to_dict(orient="records"),
-                "base_value_diag": base_value_diag,
-                "complication": shap_df_comp.to_dict(orient="records"),
-                "base_value_comp": base_value_comp
+                "diagnosis": json_diag,
+                "complication": json_comp
+                
             }
         }
     except Exception as e:
