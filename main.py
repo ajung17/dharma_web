@@ -13,10 +13,13 @@ import shap
 from functools import lru_cache
 from fastapi import Request
 from fastapi.responses import JSONResponse
-
+import os
+import uvicorn
 # Initialization of FastAPI
 app= FastAPI(title="Dharma:Pediatric Appendicitis Model API")
 
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=int(os.getenv("PORT", 8000)))
 # Root endpoint
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")

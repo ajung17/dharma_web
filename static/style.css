@@ -131,11 +131,33 @@ label .no-capitalize {
   display: none !important;
 }
 .positive {
-  color: green;
-}
-.negative {
   color: red;
 }
+.icon-link {
+  padding-left: 8px;
+  font-size: 1.2em;
+  text-decoration: none;
+}
+
+.icon-link.linkedin i {
+  color: white;
+}
+
+.icon-link.instagram i {
+  background: radial-gradient(
+    circle at 30% 107%,
+    #fdf497 0%,
+    #fdf497 5%,
+    #fd5949 45%,
+    #d6249f 60%,
+    #285AEB 90%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-fill-color: transparent;
+}
+
 .modal {
   display: none;
   position: fixed;
@@ -185,9 +207,6 @@ label .no-capitalize {
   margin-bottom: 1rem;
 }
 
-.positive {
-  color: #90ee90;
-}
 th {
   text-align: inherit;
   color: wheat;
@@ -197,7 +216,7 @@ td {
   justify-content: flex-end;
 }
 .negative {
-  color: #f08080;
+  color: green;
 }
 .base-value-row {
   display: flex;
@@ -412,48 +431,195 @@ td {
   line-height: 1.6;
 }
 
-/* Media query for tablets and larger */
-@media (min-width: 768px) {
+/* Media query for small screens (max-width: 470px) */
+@media (max-width: 450px) {
+  .logo {
+    width: 100%;
+    height: 50px; /* Adjusted for smaller screens */
+  }
+  .shap-table-wrapper {
+    max-width: 100%;
+    max-height: 80vh; /* Restrict height */
+    overflow-y: auto;
+  }
+
+  #result {
+    max-width: 100%;
+    padding: 15px;
+    font-size: 16px; /* Slightly smaller but consistent */
+    max-height: 70vh; /* Restrict height */
+  }
+
+  .modal-content {
+    width: 90%;
+    max-height: 70vh; /* Restrict modal height */
+    padding: 15px;
+    font-size: 16px; /* Consistent text size */
+  }
+
+  .modal-header {
+    font-size: 18px; /* Consistent header size */
+  }
+
+  .modal-body h3 {
+    font-size: 18px; /* Consistent heading size */
+  }
+
+  .modal-body p {
+    font-size: 16px; /* Consistent paragraph size */
+  }
+.form-group {
+  font-size: 10px;
+}
+.form-control {
+    padding: 8px;
+    height: 30px;
+    font-size: 10px; /* Consistent input size */
+  }
   .form-col {
-    flex: 0 0 50%;
-    max-width: 50%;
+    flex: 0 0 100%;
+    max-width: 100%;
+    padding-right: 10px;
+    padding-left: 10px;
+  }
+
+  .form-row {
+    margin-right: -10px;
+    margin-left: -10px;
+  }
+
+  img {
+    height: 80px;
+  }
+  .info-button {
+    width: 25px;
+    height: 25px;
+    font-size: 14px; /* Consistent font size */
   }
 }
-
-/* Media query for landscape mode on mobile devices */
-@media (max-height: 500px) and (orientation: landscape) {
-  body {
+@media (max-width: 500px) {
+  .logo-container {
+    margin-bottom: 5px;
+    padding-top: 5px;
+  }
+  .card{
     padding: 10px;
   }
-
-  .container {
-    max-width: 100%;
+.info-button {
+    width: 12px;
+    height: 12px;
+    font-size: 10px;
   }
-
-  .card {
-    padding: 15px;
-    margin-top: 0;
-    overflow-y: auto;
-    max-height: 90vh;
+}
+  .logo-divider {
+    margin-bottom: 15px;
   }
 
   h1 {
-    font-size: 24px;
+    font-size: 24px; /* Consistent heading size */
     margin-bottom: 5px;
   }
 
   .subtitle {
-    font-size: 14px;
+    font-size: 14px; /* Consistent subtitle size */
+    margin-bottom: 10px;
+  }
+
+  .btn-primary,
+  .btn-secondary {
+    padding: 10px;
+    font-size: 16px; /* Consistent button text */
+    width: 100%; /* Allow buttons to adjust width */
+  }
+}
+/* Media query for tablets (min-width: 471px and max-width: 768px) */
+@media (min-width: 471px) and (max-width: 768px) {
+  .shap-table-wrapper {
+    max-width: 100%;
+    max-height: 85vh; /* Adjust height */
+    overflow-y: auto;
+  }
+
+  #result {
+    max-width: 450px;
+    max-height: 75vh; /* Restrict height */
+    font-size: 18px; /* Consistent text size */
+  }
+
+  .form-col {
+    flex: 0 0 50%;
+    max-width: 50%;
+  }
+
+  .modal-content {
+    width: 85%;
+    max-height: 75vh; /* Restrict modal height */
+  }
+
+  img {
+    height: 100px; /* Consistent image height */
+  }
+}
+
+/* Media query for larger screens (min-width: 769px) */
+@media (min-width: 769px) {
+  .form-col {
+    flex: 0 0 33.333333%;
+    max-width: 33.333333%;
+  }
+
+  #result {
+    max-width: 500px;
+    max-height: 80vh; /* Restrict height */
+  }
+
+  .modal-content {
+    max-height: 80vh; /* Restrict modal height */
+  }
+
+  img {
+    height: 100px; /* Consistent image height */
+  }
+}
+
+/* Media query for low height devices (max-height: 500px) */
+@media (max-height: 500px) {
+  body {
+    padding: 10px;
+    font-size: 16px; /* Consistent text size */
+  }
+
+  .container {
+    max-width: 100%;
+    max-height: 90vh; /* Restrict height */
+    overflow-y: auto;
+  }
+
+  .card {
+    padding: 10px;
+    margin-top: 0;
+    max-height: 85vh; /* Restrict height */
+    overflow-y: auto;
+  }
+
+  h1 {
+    font-size: 20px; /* Consistent heading size */
+    margin-bottom: 5px;
+  }
+
+  .subtitle {
+    font-size: 14px; /* Consistent subtitle size */
     margin-bottom: 10px;
   }
 
   .form-group {
-    margin-bottom: 10px;
+    margin-bottom: 8px;
   }
 
   .form-control {
-    padding: 8px;
-    height: 40px;
+    padding: 6px;
+    height: 35px;
+    font-size: 16px; /* Consistent input size */
   }
 
   .form-row {
@@ -464,26 +630,44 @@ td {
   .form-col {
     padding-right: 5px;
     padding-left: 5px;
-    flex: 0 0 33.333333%;
-    max-width: 33.333333%;
+    flex: 0 0 50%;
+    max-width: 50%;
   }
 
   .btn-primary {
-    padding: 10px;
-    margin-top: 10px;
+    padding: 8px;
+    margin-top: 8px;
+    font-size: 16px; /* Consistent button text */
   }
 
   .modal-content {
     margin: 5% auto;
     width: 95%;
-    max-height: 85vh;
+    max-height: 80vh; /* Restrict modal height */
+    padding: 15px;
+    font-size: 16px; /* Consistent text size */
+  }
+
+  .modal-header {
+    font-size: 18px; /* Consistent header size */
+  }
+
+  .modal-body h3 {
+    font-size: 18px; /* Consistent heading size */
+  }
+
+  .modal-body p {
+    font-size: 16px; /* Consistent paragraph size */
+  }
+
+  img {
+    height: 80px; /* Consistent image height for low height */
+  }
+
+  .info-button {
+    width: 25px;
+    height: 25px;
+    font-size: 14px; /* Consistent font size */
   }
 }
 
-/* Media query for larger screens */
-@media (min-width: 1200px) {
-  .form-col {
-    flex: 0 0 33.333333%;
-    max-width: 33.333333%;
-  }
-}
