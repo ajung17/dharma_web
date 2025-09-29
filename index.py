@@ -8,6 +8,7 @@ import joblib
 import pandas as pd
 import numpy as np
 from utils.helper import shap_explanation, CI95
+from utils.notes import interpret
 
 app = FastAPI(title="DharmaAPI")
 
@@ -86,6 +87,11 @@ async def predict(data: PatientData):
         upper_ci_diag, lower_ci_diag = CI95(model_diag, x_imputed_diag_df)
         upper_ci_comp, lower_ci_comp = CI95(model_comp, x_imputed_comp_df)
 
+        # Interpret results
+        flag = x_imputed_diag_df['Appendix_Diameter_flag'].values[0]
+        result_diag, note_diag = interpret(flag, upper_ci_diag, lower_ci_diag, task='diagnosis')
+        result_comp, note_comp = interpret(flag, upper_ci_comp, lower_ci_comp, task='complication')
+
         # Return formatted result
         return {
             "diagnosis": {
@@ -94,6 +100,8 @@ async def predict(data: PatientData):
                     round(lower_ci_diag * 100, 2),
                     round(upper_ci_diag * 100, 2),
                 ],
+                "result": result_diag,
+                "note": note_diag,
                 "shap_values": shap_diag.round(4).tolist(),
                 "base_value": round(base_diag, 4),
             },
@@ -103,6 +111,8 @@ async def predict(data: PatientData):
                     round(lower_ci_comp * 100, 2),
                     round(upper_ci_comp * 100, 2),
                 ],
+                "result": result_comp,
+                "note": note_comp,
                 "shap_values": shap_comp.round(4).tolist(),
                 "base_value": round(base_comp, 4),
             },

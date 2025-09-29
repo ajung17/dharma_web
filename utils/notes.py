@@ -47,4 +47,10 @@ def interpret (flag, upper_ci, lower_ci, task):
     else:
         if upper_ci<= 0.44:
             result = "Low likelihood of developing complications."
+            note = "Conservative management can be considered."
+        else:
+            result = "High likelihood of developing complications."
+            note = "Early surgical intervention is recommended."
+
+    return result, note
 
