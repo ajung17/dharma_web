@@ -98,9 +98,9 @@ $(document).ready(function () {
       Body_Temperature: parseFloat($("#Body_Temperature").val()) || 0,
       Neutrophil_Percentage: parseFloat($("#Neutrophil_Percentage").val()) || 0,
       CRP: parseOrNull($("#CRP").val(), "float"),
-      Ketones_in_Urine: parseInt($("#Ketones_in_Urine").val()) || 0,
+      Ketones_in_Urine: parseOrNull($("#Ketones_in_Urine").val(), "float"),
       Appendix_Diameter: parseOrNull($("#Appendix_Diameter").val(), "float"),
-      Free_Fluids: parseInt($("#Free_Fluids").val()) || 0,
+      Free_Fluids: parseOrNull($("#Free_Fluids").val(), "float"),
     };
 
     $.ajax({
@@ -257,249 +257,249 @@ function clearDefaultValue(input) {
   }
 }
 
-function downloadReport() {
-  if (!predictionData) {
-    alert("Please make a prediction first before downloading the report.");
-    return;
-  }
+// function downloadReport() {
+//   if (!predictionData) {
+//     alert("Please make a prediction first before downloading the report.");
+//     return;
+//   }
 
-  const logoImg = new Image();
-  logoImg.src = "/static/images/dharma_aa.png";
+//   const logoImg = new Image();
+//   logoImg.src = "/static/images/dharma_aa.png";
 
-  logoImg.onload = () => {
-    try {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF({
-        orientation: "portrait",
-        unit: "pt",
-        format: "a4",
-      });
+//   logoImg.onload = () => {
+//     try {
+//       const { jsPDF } = window.jspdf;
+//       const doc = new jsPDF({
+//         orientation: "portrait",
+//         unit: "pt",
+//         format: "a4",
+//       });
 
-      const pageWidth = doc.internal.pageSize.getWidth();
-      const margin = 40;
-      const maxWidth = pageWidth - 2 * margin;
-      let y = margin;
+//       const pageWidth = doc.internal.pageSize.getWidth();
+//       const margin = 40;
+//       const maxWidth = pageWidth - 2 * margin;
+//       let y = margin;
 
-      const diag = predictionData.diagnosis;
-      const comp = predictionData.complication;
+//       const diag = predictionData.diagnosis;
+//       const comp = predictionData.complication;
 
-      // Logo with blue background
-      const imgWidth = 180;
-      const imgHeight = (logoImg.height / logoImg.width) * imgWidth;
-      const imgX = (pageWidth - imgWidth) / 2;
+//       // Logo with blue background
+//       const imgWidth = 180;
+//       const imgHeight = (logoImg.height / logoImg.width) * imgWidth;
+//       const imgX = (pageWidth - imgWidth) / 2;
 
-      doc.setFillColor(0, 102, 204);
-      doc.rect(imgX - 10, y - 10, imgWidth + 20, imgHeight + 20, "F");
-      doc.addImage(logoImg, "PNG", imgX, y, imgWidth, imgHeight);
-      y += imgHeight + 20;
+//       doc.setFillColor(0, 102, 204);
+//       doc.rect(imgX - 10, y - 10, imgWidth + 20, imgHeight + 20, "F");
+//       doc.addImage(logoImg, "PNG", imgX, y, imgWidth, imgHeight);
+//       y += imgHeight + 20;
 
-      // Generated on date
-      doc.setFont("Times New Roman", "normal");
-      doc.setFontSize(10);
-      doc.setTextColor(100);
-      const now = new Date();
-      const dateStr = now.toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-      });
-      doc.text(`Generated on ${dateStr}`, pageWidth / 2, y, {
-        align: "center",
-      });
-      y += 25;
+//       // Generated on date
+//       doc.setFont("Times New Roman", "normal");
+//       doc.setFontSize(10);
+//       doc.setTextColor(100);
+//       const now = new Date();
+//       const dateStr = now.toLocaleDateString("en-US", {
+//         year: "numeric",
+//         month: "long",
+//         day: "numeric",
+//         hour: "2-digit",
+//         minute: "2-digit",
+//       });
+//       doc.text(`Generated on ${dateStr}`, pageWidth / 2, y, {
+//         align: "center",
+//       });
+//       y += 25;
 
-      // Diagnosis Result
-      doc.setTextColor(0, 102, 204);
-      doc.setFontSize(14);
-      doc.text("Diagnosis Result:", margin, y);
-      y += 10;
-      doc.setLineWidth(1);
-      doc.setDrawColor(221, 221, 221);
-      doc.line(margin, y, pageWidth - margin, y);
-      y += 15;
+//       // Diagnosis Result
+//       doc.setTextColor(0, 102, 204);
+//       doc.setFontSize(14);
+//       doc.text("Diagnosis Result:", margin, y);
+//       y += 10;
+//       doc.setLineWidth(1);
+//       doc.setDrawColor(221, 221, 221);
+//       doc.line(margin, y, pageWidth - margin, y);
+//       y += 15;
 
-      doc.setFontSize(12);
-      doc.setTextColor(51, 51, 51);
-      doc.text(`Probability: ${diag.probability.toFixed(2)}%`, margin, y);
-      y += 15;
-      doc.text(
-        `Confidence Interval (95%): ${diag.confidence_interval[0].toFixed(
-          2
-        )}% - ${diag.confidence_interval[1].toFixed(2)}%`,
-        margin,
-        y
-      );
-      y += 15;
-      doc.setTextColor(
-        diag.result.includes("High") ? 217 : 51,
-        diag.result.includes("High") ? 83 : 51,
-        diag.result.includes("High") ? 79 : 51
-      );
-      doc.text(`Result: ${diag.result}`, margin, y);
-      y += 15;
-      doc.setTextColor(51, 51, 51);
-      doc.text(`Clinical Note: ${diag.note}`, margin, y, { maxWidth });
-      y +=
-        doc.getTextDimensions(`Clinical Note: ${diag.note}`, { maxWidth }).h +
-        15;
+//       doc.setFontSize(12);
+//       doc.setTextColor(51, 51, 51);
+//       doc.text(`Probability: ${diag.probability.toFixed(2)}%`, margin, y);
+//       y += 15;
+//       doc.text(
+//         `Confidence Interval (95%): ${diag.confidence_interval[0].toFixed(
+//           2
+//         )}% - ${diag.confidence_interval[1].toFixed(2)}%`,
+//         margin,
+//         y
+//       );
+//       y += 15;
+//       doc.setTextColor(
+//         diag.result.includes("High") ? 217 : 51,
+//         diag.result.includes("High") ? 83 : 51,
+//         diag.result.includes("High") ? 79 : 51
+//       );
+//       doc.text(`Result: ${diag.result}`, margin, y);
+//       y += 15;
+//       doc.setTextColor(51, 51, 51);
+//       doc.text(`Clinical Note: ${diag.note}`, margin, y, { maxWidth });
+//       y +=
+//         doc.getTextDimensions(`Clinical Note: ${diag.note}`, { maxWidth }).h +
+//         15;
 
-      // Complications
-      doc.setTextColor(0, 102, 204);
-      doc.setFontSize(14);
-      doc.text("Complications:", margin, y);
-      y += 10;
-      doc.line(margin, y, pageWidth - margin, y);
-      y += 15;
+//       // Complications
+//       doc.setTextColor(0, 102, 204);
+//       doc.setFontSize(14);
+//       doc.text("Complications:", margin, y);
+//       y += 10;
+//       doc.line(margin, y, pageWidth - margin, y);
+//       y += 15;
 
-      doc.setFontSize(12);
-      doc.setTextColor(
-        comp.probability > 50 ? 217 : 92,
-        comp.probability > 50 ? 83 : 184,
-        comp.probability > 50 ? 79 : 92
-      );
-      doc.text(
-        `Risk of Complications: ${comp.probability.toFixed(2)}%`,
-        margin,
-        y
-      );
-      y += 15;
-      doc.setTextColor(51, 51, 51);
-      doc.text(
-        `Confidence Interval (95%): ${comp.confidence_interval[0].toFixed(
-          2
-        )}% - ${comp.confidence_interval[1].toFixed(2)}%`,
-        margin,
-        y
-      );
-      y += 15;
-      doc.text(`Clinical Note: ${comp.note}`, margin, y, { maxWidth });
-      y +=
-        doc.getTextDimensions(`Clinical Note: ${comp.note}`, { maxWidth }).h +
-        15;
+//       doc.setFontSize(12);
+//       doc.setTextColor(
+//         comp.probability > 50 ? 217 : 92,
+//         comp.probability > 50 ? 83 : 184,
+//         comp.probability > 50 ? 79 : 92
+//       );
+//       doc.text(
+//         `Risk of Complications: ${comp.probability.toFixed(2)}%`,
+//         margin,
+//         y
+//       );
+//       y += 15;
+//       doc.setTextColor(51, 51, 51);
+//       doc.text(
+//         `Confidence Interval (95%): ${comp.confidence_interval[0].toFixed(
+//           2
+//         )}% - ${comp.confidence_interval[1].toFixed(2)}%`,
+//         margin,
+//         y
+//       );
+//       y += 15;
+//       doc.text(`Clinical Note: ${comp.note}`, margin, y, { maxWidth });
+//       y +=
+//         doc.getTextDimensions(`Clinical Note: ${comp.note}`, { maxWidth }).h +
+//         15;
 
-      // Model Explanation
-      if (explanationData) {
-        doc.setTextColor(0, 102, 204);
-        doc.setFontSize(14);
-        doc.text("Model Explanation", margin, y);
-        y += 10;
-        doc.line(margin, y, pageWidth - margin, y);
-        y += 15;
+//       // Model Explanation
+//       if (explanationData) {
+//         doc.setTextColor(0, 102, 204);
+//         doc.setFontSize(14);
+//         doc.text("Model Explanation", margin, y);
+//         y += 10;
+//         doc.line(margin, y, pageWidth - margin, y);
+//         y += 15;
 
-        doc.setFontSize(12);
-        doc.setTextColor(51, 51, 51);
-        doc.text(
-          "This section explains how each feature contributed to the model's prediction.",
-          margin,
-          y,
-          { maxWidth }
-        );
-        y +=
-          doc.getTextDimensions(
-            "This section explains how each feature contributed to the model's prediction.",
-            { maxWidth }
-          ).h + 15;
+//         doc.setFontSize(12);
+//         doc.setTextColor(51, 51, 51);
+//         doc.text(
+//           "This section explains how each feature contributed to the model's prediction.",
+//           margin,
+//           y,
+//           { maxWidth }
+//         );
+//         y +=
+//           doc.getTextDimensions(
+//             "This section explains how each feature contributed to the model's prediction.",
+//             { maxWidth }
+//           ).h + 15;
 
-        // Diagnosis Explanation
-        doc.text("Diagnosis Explanation", margin, y);
-        y += 15;
-        doc.text(
-          `Base Value: ${explanationData.diagnosis.base_value.toFixed(2)}`,
-          margin,
-          y
-        );
-        y += 20;
+//         // Diagnosis Explanation
+//         doc.text("Diagnosis Explanation", margin, y);
+//         y += 15;
+//         doc.text(
+//           `Base Value: ${explanationData.diagnosis.base_value.toFixed(2)}`,
+//           margin,
+//           y
+//         );
+//         y += 20;
 
-        doc.setFillColor(242, 242, 242);
-        doc.rect(margin, y - 10, maxWidth, 20, "F");
-        doc.text("Feature", margin + 5, y);
-        doc.text("SHAP Value", pageWidth - margin - 100, y);
-        y += 25;
+//         doc.setFillColor(242, 242, 242);
+//         doc.rect(margin, y - 10, maxWidth, 20, "F");
+//         doc.text("Feature", margin + 5, y);
+//         doc.text("SHAP Value", pageWidth - margin - 100, y);
+//         y += 25;
 
-        explanationData.diagnosis.shap_values.forEach((value, i) => {
-          const featureName = featureNames[i] || `Feature ${i + 1}`;
-          doc.setTextColor(
-            value > 0 ? 217 : 92,
-            value > 0 ? 83 : 184,
-            value > 0 ? 79 : 92
-          );
-          doc.text(featureName, margin + 5, y, { maxWidth: maxWidth - 100 });
-          doc.text(value.toFixed(4), pageWidth - margin - 100, y);
-          y += 15;
-        });
+//         explanationData.diagnosis.shap_values.forEach((value, i) => {
+//           const featureName = featureNames[i] || `Feature ${i + 1}`;
+//           doc.setTextColor(
+//             value > 0 ? 217 : 92,
+//             value > 0 ? 83 : 184,
+//             value > 0 ? 79 : 92
+//           );
+//           doc.text(featureName, margin + 5, y, { maxWidth: maxWidth - 100 });
+//           doc.text(value.toFixed(4), pageWidth - margin - 100, y);
+//           y += 15;
+//         });
 
-        const diagFinal = (
-          explanationData.diagnosis.base_value +
-          explanationData.diagnosis.shap_values.reduce((sum, v) => sum + v, 0)
-        ).toFixed(2);
-        doc.setTextColor(51, 51, 51);
-        doc.text("Final Prediction", margin + 5, y);
-        doc.text(diagFinal, pageWidth - margin - 100, y);
-        y += 20;
+//         const diagFinal = (
+//           explanationData.diagnosis.base_value +
+//           explanationData.diagnosis.shap_values.reduce((sum, v) => sum + v, 0)
+//         ).toFixed(2);
+//         doc.setTextColor(51, 51, 51);
+//         doc.text("Final Prediction", margin + 5, y);
+//         doc.text(diagFinal, pageWidth - margin - 100, y);
+//         y += 20;
 
-        // Complication Explanation
-        doc.text("Complication Risk Explanation", margin, y);
-        y += 15;
-        doc.text(
-          `Base Value: ${explanationData.complication.base_value.toFixed(2)}`,
-          margin,
-          y
-        );
-        y += 20;
+//         // Complication Explanation
+//         doc.text("Complication Risk Explanation", margin, y);
+//         y += 15;
+//         doc.text(
+//           `Base Value: ${explanationData.complication.base_value.toFixed(2)}`,
+//           margin,
+//           y
+//         );
+//         y += 20;
 
-        doc.setFillColor(242, 242, 242);
-        doc.rect(margin, y - 10, maxWidth, 20, "F");
-        doc.text("Feature", margin + 5, y);
-        doc.text("SHAP Value", pageWidth - margin - 100, y);
-        y += 25;
+//         doc.setFillColor(242, 242, 242);
+//         doc.rect(margin, y - 10, maxWidth, 20, "F");
+//         doc.text("Feature", margin + 5, y);
+//         doc.text("SHAP Value", pageWidth - margin - 100, y);
+//         y += 25;
 
-        explanationData.complication.shap_values.forEach((value, i) => {
-          const featureName = featureNames[i] || `Feature ${i + 1}`;
-          doc.setTextColor(
-            value > 0 ? 217 : 92,
-            value > 0 ? 83 : 184,
-            value > 0 ? 79 : 92
-          );
-          doc.text(featureName, margin + 5, y, { maxWidth: maxWidth - 100 });
-          doc.text(value.toFixed(4), pageWidth - margin - 100, y);
-          y += 15;
-        });
+//         explanationData.complication.shap_values.forEach((value, i) => {
+//           const featureName = featureNames[i] || `Feature ${i + 1}`;
+//           doc.setTextColor(
+//             value > 0 ? 217 : 92,
+//             value > 0 ? 83 : 184,
+//             value > 0 ? 79 : 92
+//           );
+//           doc.text(featureName, margin + 5, y, { maxWidth: maxWidth - 100 });
+//           doc.text(value.toFixed(4), pageWidth - margin - 100, y);
+//           y += 15;
+//         });
 
-        const compFinal = (
-          explanationData.complication.base_value +
-          explanationData.complication.shap_values.reduce(
-            (sum, v) => sum + v,
-            0
-          )
-        ).toFixed(2);
-        doc.setTextColor(51, 51, 51);
-        doc.text("Final Prediction", margin + 5, y);
-        doc.text(compFinal, pageWidth - margin - 100, y);
-        y += 20;
-      }
+//         const compFinal = (
+//           explanationData.complication.base_value +
+//           explanationData.complication.shap_values.reduce(
+//             (sum, v) => sum + v,
+//             0
+//           )
+//         ).toFixed(2);
+//         doc.setTextColor(51, 51, 51);
+//         doc.text("Final Prediction", margin + 5, y);
+//         doc.text(compFinal, pageWidth - margin - 100, y);
+//         y += 20;
+//       }
 
-      // Footer
-      doc.setFontSize(10);
-      doc.setTextColor(119, 119, 119);
-      doc.text("powered by DharmaAI: Appendicitis Model", pageWidth / 2, y, {
-        align: "center",
-      });
-      y += 15;
-      doc.text("To be used for clinical decision-support.", pageWidth / 2, y, {
-        align: "center",
-      });
+//       // Footer
+//       doc.setFontSize(10);
+//       doc.setTextColor(119, 119, 119);
+//       doc.text("powered by DharmaAI: Appendicitis Model", pageWidth / 2, y, {
+//         align: "center",
+//       });
+//       y += 15;
+//       doc.text("To be used for clinical decision-support.", pageWidth / 2, y, {
+//         align: "center",
+//       });
 
-      // Save PDF
-      doc.save(`Appendicitis_Report_${now.getTime()}.pdf`);
-    } catch (err) {
-      console.error("Report generation error:", err.message);
-      alert("Failed to generate report: " + err.message);
-    }
-  };
+//       // Save PDF
+//       doc.save(`Appendicitis_Report_${now.getTime()}.pdf`);
+//     } catch (err) {
+//       console.error("Report generation error:", err.message);
+//       alert("Failed to generate report: " + err.message);
+//     }
+//   };
 
-  logoImg.onerror = () => {
-    alert("Failed to load the logo image.");
-  };
-}
+//   logoImg.onerror = () => {
+//     alert("Failed to load the logo image.");
+//   };
+// }
