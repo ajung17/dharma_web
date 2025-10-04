@@ -1,35 +1,74 @@
 let predictionData = null;
 let explanationData = null;
+
+// Feature names for SHAP values (aligned with formData)
+const featureNames = [
+  "Nausea",
+  "Loss of Appetite",
+  "Peritonitis",
+  "WBC Count",
+  "Body Temperature",
+  "Neutrophil Percentage",
+  "CRP",
+  "Ketones in Urine",
+  "Appendix Diameter",
+  "Free Fluids",
+  "Additional Feature", // Added for complication's extra SHAP value
+];
+
 $(document).ready(function () {
   // Info button modal functionality
   const docModal = document.getElementById("docModal");
   const infoBtn = document.getElementById("infoButton");
-  const docCloseBtn = docModal.getElementsByClassName("close-modal")[0];
+  const docCloseBtn = docModal?.getElementsByClassName("close-modal")[0];
 
   // Explanation modal functionality
   const explainModal = document.getElementById("explainModal");
   const explainBtn = document.getElementById("explainButton");
-  const explainCloseBtn = explainModal.getElementsByClassName("close-modal")[0];
+  const explainCloseBtn =
+    explainModal?.getElementsByClassName("close-modal")[0];
 
   // Open documentation modal
-  infoBtn.onclick = function () {
-    docModal.style.display = "block";
-  };
+  if (infoBtn && docModal) {
+    infoBtn.onclick = function () {
+      docModal.style.display = "block";
+    };
+  }
 
   // Close documentation modal
-  docCloseBtn.onclick = function () {
-    docModal.style.display = "none";
-  };
+  if (docCloseBtn && docModal) {
+    docCloseBtn.onclick = function () {
+      docModal.style.display = "none";
+    };
+  }
 
   // Open explanation modal
-  explainBtn.onclick = function () {
-    explainModal.style.display = "block";
-  };
+  if (explainBtn) {
+    explainBtn.onclick = function () {
+      if (!explanationData) {
+        alert("Please get a prediction first.");
+        return;
+      }
+
+      const shapValues = {
+        diagnosis: explanationData.diagnosis.shap_values,
+        complication: explanationData.complication.shap_values,
+      };
+
+      // Render SHAP explanation for both
+      renderShapTables(shapValues);
+      if (explainModal) {
+        explainModal.style.display = "block";
+      }
+    };
+  }
 
   // Close explanation modal
-  explainCloseBtn.onclick = function () {
-    explainModal.style.display = "none";
-  };
+  if (explainCloseBtn && explainModal) {
+    explainCloseBtn.onclick = function () {
+      explainModal.style.display = "none";
+    };
+  }
 
   // Close modals when clicking outside
   window.onclick = function (event) {
@@ -40,122 +79,95 @@ $(document).ready(function () {
       explainModal.style.display = "none";
     }
   };
-  const backendUrl = "";
+
+  const backendUrl = ""; // Set your backend URL here
   // Form submission handler
   $("#prediction-form").on("submit", function (event) {
     event.preventDefault(); // Prevent page reload
-
-    const action = $(document.activeElement).val(); // Get the value of the clicked submit button
-
+    function parseOrNull(value, type = "float") {
+      if (value === "" || value === null || value === undefined) return null;
+      if (type === "int") return parseInt(value);
+      if (type === "float") return parseFloat(value);
+      return value;
+    }
     const formData = {
-      Nausea: parseInt($("#Nausea").val()),
-      Loss_of_Appetite: parseInt($("#Loss_of_Appetite").val()),
-      Peritonitis: parseInt($("#Peritonitis").val()),
-      WBC_Count: parseFloat($("#WBC_Count").val()),
-      Body_Temperature: parseFloat($("#Body_Temperature").val()),
-      Neutrophil_Percentage: parseFloat($("#Neutrophil_Percentage").val()),
-      CRP: parseFloat($("#CRP").val()),
-      Ketones_in_Urine: parseInt($("#Ketones_in_Urine").val()),
-      Appendix_Diameter: parseFloat($("#Appendix_Diameter").val()),
-      Free_Fluids: parseInt($("#Free_Fluids").val()),
+      Nausea: parseInt($("#Nausea").val()) || 0,
+      Loss_of_Appetite: parseInt($("#Loss_of_Appetite").val()) || 0,
+      Peritonitis: parseInt($("#Peritonitis").val()) || 0,
+      WBC_Count: parseFloat($("#WBC_Count").val()) || 0,
+      Body_Temperature: parseFloat($("#Body_Temperature").val()) || 0,
+      Neutrophil_Percentage: parseFloat($("#Neutrophil_Percentage").val()) || 0,
+      CRP: parseOrNull($("#CRP").val(), "float"),
+      Ketones_in_Urine: parseInt($("#Ketones_in_Urine").val()) || 0,
+      Appendix_Diameter: parseOrNull($("#Appendix_Diameter").val(), "float"),
+      Free_Fluids: parseInt($("#Free_Fluids").val()) || 0,
     };
-    const url =
-      action === "predict"
-        ? `${backendUrl}/predict`
-        : `${backendUrl}/explanation`;
 
     $.ajax({
-      url: url,
+      url: `${backendUrl}/predict`,
       type: "POST",
       contentType: "application/json",
       data: JSON.stringify(formData),
       success: function (response) {
-        console.log("Server response for", action, ":", response); // Log for debugging
+        console.log("Server response:", response);
 
-        if (action === "predict") {
-          predictionData = response;
-          const diagnosis = response.diagnosis;
-          const complication = response.complication;
+        // Store full response for report + explanation
+        predictionData = response;
+        explanationData = response; // both are now same response object
 
-          const upper_ci_diag = diagnosis.confidence_interval[1]; // upper bound
-          const threshold_diag = diagnosis.threshold_used;
+        const diagnosis = response.diagnosis;
+        const complication = response.complication;
 
-          // Build the diagnosis HTML
-          let html = `
-        <div class="result-row">
-            <strong class="highlighted-score">
-              <span class="result-label">Dharma Score:</span>
-              <span class="result-value score-value">${Math.round(
-                diagnosis.dharma_score
+        // --- BUILD DIAGNOSIS RESULT HTML ---
+        let html = `
+          <div class="result-section diagnosis-section">
+            <h4>Diagnosis</h4>
+            <div class="result-row">
+              <span class="result-label">Probability:</span>
+              <span class="result-value">${diagnosis.probability.toFixed(
+                2
               )}%</span>
-            </strong>
+            </div>
+            <div class="result-row">
+              <span class="result-label">95% Confidence Interval:</span>
+              <span class="result-value">${diagnosis.confidence_interval[0].toFixed(
+                2
+              )}% - ${diagnosis.confidence_interval[1].toFixed(2)}%</span>
+            </div>
+            <div class="result-row">
+              <span class="result-label">Result:</span>
+              <span class="result-value high-risk">${diagnosis.result}</span>
+            </div>
+            <div class="clinical-note">Note: ${diagnosis.note}</div>
           </div>
-            <div class="result-row">
-                <span class="result-value ${
-                  diagnosis.prediction.includes("High") ? "high-risk" : ""
-                }">
-                    ${diagnosis.prediction}
-                </span>
-            </div>
-  
-            <div class="result-row">
-                <span class="result-label">95% Confidence Interval:</span>
-                <span class="result-value">${Math.round(
-                  diagnosis.confidence_interval[0]
-                )}% - ${Math.round(diagnosis.confidence_interval[1])}%</span>
-            </div>
-            <div class="result-row">
-                <span class="result-label">Threshold:</span>
-                <span class="result-value">${Math.round(
-                  diagnosis.threshold_used
-                )}%</span>
-            </div>
-            <div class="result-row">
-                <span class="result-label">Diagnostic Certainty:</span>
-                <span class="result-value certainty-${diagnosis.diagnostic_certainty
-                  .toLowerCase()
-                  .replace(" ", "-")}">
-                    ${diagnosis.diagnostic_certainty}
-                </span>
-            </div>
-            <div class="clinical-note">
-                Clinical Note: ${diagnosis.note}
-            </div>
-        </div>`;
+        `;
 
-          // Only add the complication section if upper_ci_diag > threshold_diag
-          if (upper_ci_diag > threshold_diag) {
-            html += `
-            <br>
-            <h4>Severity Assessment:</h4>
-        <div class="result-section complication-section">
+        // --- BUILD COMPLICATION RESULT HTML ---
+        html += `
+          <div class="result-section complication-section mt-4">
+            <h4>Complications</h4>
             <div class="result-row">
-                <span class="result-label">Risk of Complications:</span>
-                <span class="result-value ${
-                  complication.probability > 50 ? "high-risk" : "low-risk"
-                }">
-                    ${Math.round(complication.probability)}%
-                </span>
+              <span class="result-label">Probability:</span>
+              <span class="result-value">${complication.probability.toFixed(
+                2
+              )}%</span>
             </div>
             <div class="result-row">
-                <span class="result-label">95% Confidence Interval:</span>
-                <span class="result-value">${Math.round(
-                  complication.confidence_interval[0]
-                )}% - ${Math.round(complication.confidence_interval[1])}%</span>
+              <span class="result-label">95% Confidence Interval:</span>
+              <span class="result-value">${complication.confidence_interval[0].toFixed(
+                2
+              )}% - ${complication.confidence_interval[1].toFixed(2)}%</span>
             </div>
-            <div class="clinical-note">
-                ${complication.note}
+            <div class="result-row">
+              <span class="result-label">Result:</span>
+              <span class="result-value high-risk">${complication.result}</span>
             </div>
-        </div>`;
-          }
-          html += `</div>`; // close result-container
+            <div class="clinical-note">Note: ${complication.note}</div>
+          </div>
+        `;
 
-          $("#result").show().html(html);
-          $("#explainButton").removeClass("hidden");
-        } else if (action === "explaination") {
-          explanationData = response;
-          renderShapTables(response.shap_values);
-        }
+        $("#result").show().html(html);
+        $("#explainButton").removeClass("hidden");
       },
       error: function (xhr, status, error) {
         console.error("Error:", error);
@@ -163,70 +175,78 @@ $(document).ready(function () {
       },
     });
   });
+
+  // Section toggle functionality
+  $(".section-btn").on("click", function () {
+    $(".section-btn").removeClass("active");
+    $(this).addClass("active");
+    const sectionToShow = $(this).data("section");
+    $(".section-content").hide();
+    $("#" + sectionToShow).show();
+  });
 });
 
 // Function to render SHAP tables in the explanation modal
-function renderShapTables(shapValues) {
+function renderShapTables(data) {
+  const explainContent = document.getElementById("explainContent");
+  if (!explainContent) {
+    console.error("Element with ID 'explainContent' not found.");
+    return;
+  }
+
   let html = '<div class="shap-tables-container">';
 
   for (const type of ["diagnosis", "complication"]) {
-    const data = shapValues[type];
-    let baseValue = null;
-    let result = null;
-    const features = [];
+    const shap = data[type];
 
-    // Separate base value, result, and features
-    for (const item of data) {
-      if (item.Feature === "Base Value") {
-        baseValue = item["SHAP value"];
-      } else if (item.Feature === "Result") {
-        result = item["SHAP value"];
-      } else {
-        features.push(item);
-      }
+    if (!shap || !Array.isArray(shap)) {
+      html += `<p style="color:red;">No SHAP data found for ${type}.</p>`;
+      continue;
     }
 
-    // Build HTML for each table
-    html += `<div class="shap-table-wrapper">`;
-    html += `<h3>${
-      type.charAt(0).toUpperCase() + type.slice(1)
-    } Explanation</h3>`;
-    const resultClass = result > 0 ? "positive" : "negative";
-    html += `<p class="base-value-row">
-  <span class="base-value-label"><strong>Base Value:</strong></span>
-  <span class="base-value-number">${baseValue.toFixed(2)}</span>
-</p>`;
-    html += '<table class="table table-striped">';
-    html += "<thead><tr><th>Feature</th><th>SHAP Value</th></tr></thead>";
-    html += "<tbody>";
+    const baseValue = explanationData[type].base_value ?? 0;
+    const shapValues = shap;
+    const totalImpact = shapValues.reduce((sum, v) => sum + v, 0);
+    const finalValue = baseValue + totalImpact;
 
-    for (const feature of features) {
-      const shapValue = feature["SHAP value"];
-      const valueClass = shapValue > 0 ? "positive" : "negative";
-      html += `<tr><td>${
-        feature.Feature
-      }</td><td class="${valueClass}">${shapValue.toFixed(4)}</td></tr>`;
-    }
+    html += `
+      <div class="shap-table-wrapper">
+        <h3>${type.charAt(0).toUpperCase() + type.slice(1)} Explanation</h3>
+        <p class="base-value-row">
+          <span class="base-value-label"><strong>Base Value:</strong></span>
+          <span class="base-value-number">${baseValue.toFixed(4)}</span>
+        </p>
+        <p class="final-value-row">
+          <span class="final-value-label"><strong>Final Model Output:</strong></span>
+          <span class="final-value-number">${finalValue.toFixed(4)}</span>
+        </p>
+        <table class="shap-table">
+          <thead>
+            <tr><th>Feature</th><th>SHAP Value</th></tr>
+          </thead>
+          <tbody>
+    `;
 
-    // Determine class for final prediction
-    html += `<tr "><td "><strong>Final Prediction</strong></td><td class="final-prediction">${result.toFixed(
-      2
-    )}</td></tr>`;
+    shapValues.forEach((v, i) => {
+      const featureName = featureNames[i] || `Feature ${i + 1}`;
+      const signClass = v >= 0 ? "positive" : "negative";
+      html += `
+        <tr>
+          <td>${featureName}</td>
+          <td class="${signClass}">${v.toFixed(4)}</td>
+        </tr>
+      `;
+    });
 
-    html += "</tbody></table>";
-    html += "</div>";
+    html += `
+          </tbody>
+        </table>
+      </div>
+    `;
   }
 
   html += "</div>";
-  $("#explainResult").html(html);
-  $("#explainResult").append(`
-      <div class="text-center mt-4">
-        <button id="downloadReport" class="download-btn">Download Full Report</button>
-      </div>
-    `);
-
-  $("#downloadReport").on("click", downloadReport);
-  $("#explainModal").show(); // Show the explanation modal
+  explainContent.innerHTML = html;
 }
 
 // Clear default value function
@@ -236,31 +256,13 @@ function clearDefaultValue(input) {
     input.value = "";
   }
 }
-$(document).ready(function () {
-  $(".section-btn").on("click", function () {
-    // Remove active from all buttons
-    $(".section-btn").removeClass("active");
 
-    // Add active to clicked button
-    $(this).addClass("active");
-
-    // Get the section to show
-    const sectionToShow = $(this).data("section");
-
-    // Hide all sections
-    $(".section-content").hide();
-
-    // Show selected section
-    $("#" + sectionToShow).show();
-  });
-});
 function downloadReport() {
   if (!predictionData) {
     alert("Please make a prediction first before downloading the report.");
     return;
   }
 
-  // Load the logo image
   const logoImg = new Image();
   logoImg.src = "/static/images/dharma_aa.png";
 
@@ -278,31 +280,23 @@ function downloadReport() {
       const maxWidth = pageWidth - 2 * margin;
       let y = margin;
 
-      if (!predictionData.diagnosis || !predictionData.complication) {
-        throw new Error("Missing diagnosis or complication data in predictionData");
-      }
-
       const diag = predictionData.diagnosis;
       const comp = predictionData.complication;
 
-      // ==== Logo with blue background ====
-      const imgWidth = 180; // Larger width
+      // Logo with blue background
+      const imgWidth = 180;
       const imgHeight = (logoImg.height / logoImg.width) * imgWidth;
       const imgX = (pageWidth - imgWidth) / 2;
 
-      // Draw blue rectangle background behind logo
-      doc.setFillColor(0, 102, 204); // Blue color
+      doc.setFillColor(0, 102, 204);
       doc.rect(imgX - 10, y - 10, imgWidth + 20, imgHeight + 20, "F");
-
-      // Draw logo image
-      doc.addImage(logoImg, 'PNG', imgX, y, imgWidth, imgHeight);
+      doc.addImage(logoImg, "PNG", imgX, y, imgWidth, imgHeight);
       y += imgHeight + 20;
 
-      // Smaller "Generated on" date
+      // Generated on date
       doc.setFont("Times New Roman", "normal");
-      doc.setFontSize(10); // Smaller font size
-      doc.setTextColor(100); // Lighter gray
-
+      doc.setFontSize(10);
+      doc.setTextColor(100);
       const now = new Date();
       const dateStr = now.toLocaleDateString("en-US", {
         year: "numeric",
@@ -311,11 +305,12 @@ function downloadReport() {
         hour: "2-digit",
         minute: "2-digit",
       });
-
-      doc.text(`Generated on ${dateStr}`, pageWidth / 2, y, { align: "center" });
+      doc.text(`Generated on ${dateStr}`, pageWidth / 2, y, {
+        align: "center",
+      });
       y += 25;
 
-      // Patient Assessment Summary
+      // Diagnosis Result
       doc.setTextColor(0, 102, 204);
       doc.setFontSize(14);
       doc.text("Diagnosis Result:", margin, y);
@@ -327,62 +322,67 @@ function downloadReport() {
 
       doc.setFontSize(12);
       doc.setTextColor(51, 51, 51);
-      doc.text(`Dharma Score: ${Math.round(diag.dharma_score)}%`, margin, y);
+      doc.text(`Probability: ${diag.probability.toFixed(2)}%`, margin, y);
       y += 15;
-
-      doc.setTextColor(
-        diag.prediction.includes("High") ? 217 : 51,
-        diag.prediction.includes("High") ? 83 : 51,
-        diag.prediction.includes("High") ? 79 : 51
-      );
-      doc.text(`Prediction: ${diag.prediction}`, margin, y);
-      y += 15;
-
-      doc.setTextColor(51, 51, 51);
       doc.text(
-        `Confidence Interval (95%): ${Math.round(diag.confidence_interval[0])}% - ${Math.round(diag.confidence_interval[1])}%`,
+        `Confidence Interval (95%): ${diag.confidence_interval[0].toFixed(
+          2
+        )}% - ${diag.confidence_interval[1].toFixed(2)}%`,
         margin,
         y
       );
       y += 15;
-      doc.text(`Threshold: ${Math.round(diag.threshold_used)}%`, margin, y);
+      doc.setTextColor(
+        diag.result.includes("High") ? 217 : 51,
+        diag.result.includes("High") ? 83 : 51,
+        diag.result.includes("High") ? 79 : 51
+      );
+      doc.text(`Result: ${diag.result}`, margin, y);
       y += 15;
-      doc.text(`Diagnostic Certainty: ${diag.diagnostic_certainty}`, margin, y);
-      y += 15;
+      doc.setTextColor(51, 51, 51);
       doc.text(`Clinical Note: ${diag.note}`, margin, y, { maxWidth });
-      y += doc.getTextDimensions(`Clinical Note: ${diag.note}`, { maxWidth }).h + 15;
+      y +=
+        doc.getTextDimensions(`Clinical Note: ${diag.note}`, { maxWidth }).h +
+        15;
 
-      if (diag.confidence_interval[1] > diag.threshold_used) {
-        doc.setFontSize(14);
-        doc.setTextColor(0, 102, 204);
-        doc.text("Severity Assessment:", margin, y);
-        y += 10;
-        doc.setLineWidth(1);
-        doc.line(margin, y, pageWidth - margin, y);
-        y += 15;
+      // Complications
+      doc.setTextColor(0, 102, 204);
+      doc.setFontSize(14);
+      doc.text("Complications:", margin, y);
+      y += 10;
+      doc.line(margin, y, pageWidth - margin, y);
+      y += 15;
 
-        doc.setFontSize(12);
-        doc.setTextColor(
-          comp.probability > 50 ? 217 : 92,
-          comp.probability > 50 ? 83 : 184,
-          comp.probability > 50 ? 79 : 92
-        );
-        doc.text(`Risk of Complications: ${Math.round(comp.probability)}%`, margin, y);
-        y += 15;
-        doc.setTextColor(51, 51, 51);
-        doc.text(
-          `Confidence Interval (95%): ${Math.round(comp.confidence_interval[0])}% - ${Math.round(comp.confidence_interval[1])}%`,
-          margin,
-          y
-        );
-        y += 15;
-        doc.text(`Clinical Note: ${comp.note}`, margin, y, { maxWidth });
-        y += doc.getTextDimensions(`Clinical Note: ${comp.note}`, { maxWidth }).h + 15;
-      }
+      doc.setFontSize(12);
+      doc.setTextColor(
+        comp.probability > 50 ? 217 : 92,
+        comp.probability > 50 ? 83 : 184,
+        comp.probability > 50 ? 79 : 92
+      );
+      doc.text(
+        `Risk of Complications: ${comp.probability.toFixed(2)}%`,
+        margin,
+        y
+      );
+      y += 15;
+      doc.setTextColor(51, 51, 51);
+      doc.text(
+        `Confidence Interval (95%): ${comp.confidence_interval[0].toFixed(
+          2
+        )}% - ${comp.confidence_interval[1].toFixed(2)}%`,
+        margin,
+        y
+      );
+      y += 15;
+      doc.text(`Clinical Note: ${comp.note}`, margin, y, { maxWidth });
+      y +=
+        doc.getTextDimensions(`Clinical Note: ${comp.note}`, { maxWidth }).h +
+        15;
 
+      // Model Explanation
       if (explanationData) {
-        doc.setFontSize(14);
         doc.setTextColor(0, 102, 204);
+        doc.setFontSize(14);
         doc.text("Model Explanation", margin, y);
         y += 10;
         doc.line(margin, y, pageWidth - margin, y);
@@ -390,15 +390,26 @@ function downloadReport() {
 
         doc.setFontSize(12);
         doc.setTextColor(51, 51, 51);
-        doc.text("This section explains how each feature contributed to the model's prediction.", margin, y, { maxWidth });
-        y += doc.getTextDimensions("This section explains how each feature contributed to the model's prediction.", { maxWidth }).h + 15;
+        doc.text(
+          "This section explains how each feature contributed to the model's prediction.",
+          margin,
+          y,
+          { maxWidth }
+        );
+        y +=
+          doc.getTextDimensions(
+            "This section explains how each feature contributed to the model's prediction.",
+            { maxWidth }
+          ).h + 15;
 
-        doc.setFontSize(12);
+        // Diagnosis Explanation
         doc.text("Diagnosis Explanation", margin, y);
         y += 15;
-
-        const baseValue = explanationData.shap_values.diagnosis.find(item => item.Feature === "Base Value")["SHAP value"].toFixed(2);
-        doc.text(`Base Value: ${baseValue}`, margin, y);
+        doc.text(
+          `Base Value: ${explanationData.diagnosis.base_value.toFixed(2)}`,
+          margin,
+          y
+        );
         y += 20;
 
         doc.setFillColor(242, 242, 242);
@@ -407,70 +418,81 @@ function downloadReport() {
         doc.text("SHAP Value", pageWidth - margin - 100, y);
         y += 25;
 
-        explanationData.shap_values.diagnosis.forEach(item => {
-          if (item.Feature !== "Base Value" && item.Feature !== "Result") {
-            doc.setTextColor(
-              item["SHAP value"] > 0 ? 217 : 92,
-              item["SHAP value"] > 0 ? 83 : 184,
-              item["SHAP value"] > 0 ? 79 : 92
-            );
-            doc.text(item.Feature, margin + 5, y, { maxWidth: maxWidth - 100 });
-            doc.text(item["SHAP value"].toFixed(4), pageWidth - margin - 100, y);
-            y += 15;
-          }
+        explanationData.diagnosis.shap_values.forEach((value, i) => {
+          const featureName = featureNames[i] || `Feature ${i + 1}`;
+          doc.setTextColor(
+            value > 0 ? 217 : 92,
+            value > 0 ? 83 : 184,
+            value > 0 ? 79 : 92
+          );
+          doc.text(featureName, margin + 5, y, { maxWidth: maxWidth - 100 });
+          doc.text(value.toFixed(4), pageWidth - margin - 100, y);
+          y += 15;
         });
 
-        const finalPrediction = explanationData.shap_values.diagnosis.find(item => item.Feature === "Result")["SHAP value"].toFixed(2);
+        const diagFinal = (
+          explanationData.diagnosis.base_value +
+          explanationData.diagnosis.shap_values.reduce((sum, v) => sum + v, 0)
+        ).toFixed(2);
         doc.setTextColor(51, 51, 51);
         doc.text("Final Prediction", margin + 5, y);
-        doc.text(finalPrediction, pageWidth - margin - 100, y);
+        doc.text(diagFinal, pageWidth - margin - 100, y);
         y += 20;
 
-        if (explanationData.shap_values.complication) {
-          doc.setFontSize(12);
-          doc.text("Complication Risk Explanation", margin, y);
+        // Complication Explanation
+        doc.text("Complication Risk Explanation", margin, y);
+        y += 15;
+        doc.text(
+          `Base Value: ${explanationData.complication.base_value.toFixed(2)}`,
+          margin,
+          y
+        );
+        y += 20;
+
+        doc.setFillColor(242, 242, 242);
+        doc.rect(margin, y - 10, maxWidth, 20, "F");
+        doc.text("Feature", margin + 5, y);
+        doc.text("SHAP Value", pageWidth - margin - 100, y);
+        y += 25;
+
+        explanationData.complication.shap_values.forEach((value, i) => {
+          const featureName = featureNames[i] || `Feature ${i + 1}`;
+          doc.setTextColor(
+            value > 0 ? 217 : 92,
+            value > 0 ? 83 : 184,
+            value > 0 ? 79 : 92
+          );
+          doc.text(featureName, margin + 5, y, { maxWidth: maxWidth - 100 });
+          doc.text(value.toFixed(4), pageWidth - margin - 100, y);
           y += 15;
+        });
 
-          const compBaseValue = explanationData.shap_values.complication.find(item => item.Feature === "Base Value")["SHAP value"].toFixed(2);
-          doc.text(`Base Value: ${compBaseValue}`, margin, y);
-          y += 20;
-
-          doc.setFillColor(242, 242, 242);
-          doc.rect(margin, y - 10, maxWidth, 20, "F");
-          doc.text("Feature", margin + 5, y);
-          doc.text("SHAP Value", pageWidth - margin - 100, y);
-          y += 25;
-
-          explanationData.shap_values.complication.forEach(item => {
-            if (item.Feature !== "Base Value" && item.Feature !== "Result") {
-              doc.setTextColor(
-                item["SHAP value"] > 0 ? 217 : 92,
-                item["SHAP value"] > 0 ? 83 : 184,
-                item["SHAP value"] > 0 ? 79 : 92
-              );
-              doc.text(item.Feature, margin + 5, y, { maxWidth: maxWidth - 100 });
-              doc.text(item["SHAP value"].toFixed(4), pageWidth - margin - 100, y);
-              y += 15;
-            }
-          });
-
-          const compFinalPrediction = explanationData.shap_values.complication.find(item => item.Feature === "Result")["SHAP value"].toFixed(2);
-          doc.setTextColor(51, 51, 51);
-          doc.text("Final Prediction", margin + 5, y);
-          doc.text(compFinalPrediction, pageWidth - margin - 100, y);
-          y += 20;
-        }
+        const compFinal = (
+          explanationData.complication.base_value +
+          explanationData.complication.shap_values.reduce(
+            (sum, v) => sum + v,
+            0
+          )
+        ).toFixed(2);
+        doc.setTextColor(51, 51, 51);
+        doc.text("Final Prediction", margin + 5, y);
+        doc.text(compFinal, pageWidth - margin - 100, y);
+        y += 20;
       }
-      y += 15;
+
       // Footer
       doc.setFontSize(10);
       doc.setTextColor(119, 119, 119);
-      doc.text("powered by DharmaAI: Appendicitis Model", pageWidth / 2, y, { align: "center" });
+      doc.text("powered by DharmaAI: Appendicitis Model", pageWidth / 2, y, {
+        align: "center",
+      });
       y += 15;
-      doc.text("To be used for clinical decision-support.", pageWidth / 2, y, { align: "center" });
+      doc.text("To be used for clinical decision-support.", pageWidth / 2, y, {
+        align: "center",
+      });
+
       // Save PDF
       doc.save(`Appendicitis_Report_${now.getTime()}.pdf`);
-
     } catch (err) {
       console.error("Report generation error:", err.message);
       alert("Failed to generate report: " + err.message);
@@ -481,4 +503,3 @@ function downloadReport() {
     alert("Failed to load the logo image.");
   };
 }
-

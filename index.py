@@ -7,6 +7,7 @@ from pydantic import BaseModel
 import joblib
 import pandas as pd
 import numpy as np
+from typing import Optional
 from utils.helper import shap_explanation, CI95
 from utils.notes import interpret
 
@@ -42,10 +43,10 @@ class PatientData(BaseModel):
     Peritonitis: int
     WBC_Count: float
     Neutrophil_Percentage: float
-    CRP: float
-    Ketones_in_Urine: int
-    Appendix_Diameter: float
-    Free_Fluids: int
+    CRP: Optional[float] = None
+    Ketones_in_Urine: Optional[int] = None
+    Appendix_Diameter: Optional[float] = None
+    Free_Fluids: Optional[int] = None
     Body_Temperature: float
 
 
@@ -59,6 +60,8 @@ async def predict(data: PatientData):
     try:
         # Convert input into DataFrame
         df = pd.DataFrame([data.dict()])
+        df = df.replace({None: np.nan})
+        
         columns= ['Nausea', 'Loss_of_Appetite', 'Peritonitis', 'WBC_Count', 'Neutrophil_Percentage', 'CRP', 'Ketones_in_Urine', 'Appendix_Diameter', 'Free_Fluids', 'Body_Temperature','Appendix_Diameter_flag']
 
         # Extract steps from pipeline
