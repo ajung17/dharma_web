@@ -44,7 +44,7 @@ class PatientData(BaseModel):
     WBC_Count: float
     Neutrophil_Percentage: float
     CRP: Optional[float] = None
-    Ketones_in_Urine: Optional[int] = None
+    Ketones_in_Urine: Optional[float] = None
     Appendix_Diameter: Optional[float] = None
     Free_Fluids: Optional[int] = None
     Body_Temperature: float
