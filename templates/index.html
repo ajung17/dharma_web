@@ -233,11 +233,10 @@
             </div>
             <div id="about" class="section-content">
               <p>
-                Dharma is a novel, interpretable machine learning based clinical
-                decision support system, designed to address the diagnostic and
-                prognostic challenges of pediatric appendicitis by integrating
-                easily obtainable clinical, laboratory, and radiological data
-                into a unified, real-time predictive framework.
+                Dharma is a novel, non-linear, interpretable AI based clinical scoring system
+                for diagnosis and prognosis of acute appendicitis in patients presenting with 
+                acute abdominal pain.
+                It utilizes routinely available clinical parameters and point-of-care ultrasound findings to provide accurate predictions.
               </p>
               <p><strong>SHAP Explanations:</strong>
                 <br />
@@ -245,10 +244,6 @@
                 quantifies the contribution of a specific input feature to the model’s output, relative to a base value. 
                 The base value represents the model’s expected output, 
                 and the sum of the SHAP values shows how much each feature pushes the prediction above or below this baseline.
-              </p>
-
-              <p>
-                Note: Input 0 if the value is not available or not applicable.
               </p>
               <p>
                 <strong>To be used by healthcare professionals only.</strong>
@@ -259,7 +254,7 @@
               <p>
                 LITERATURE: doi:
                 <a
-                  href="https://doi.org/10.1101/2025.05.27.25328468"
+                  href="https://www.medrxiv.org/content/10.1101/2025.05.27.25328468v2.full-text"
                   target="_blank"
                   >10.1101/2025.05.27.25328468</a
                 ><br />
@@ -273,27 +268,32 @@
 
               <p>
                 PERFORMANCE METRICS:<br />
-                <strong>Threshold: 64%</strong><br />
-                AUC-ROC: 0.97-0.98 <br />
-                Sensitivity: 89%-95% <br />
-                Specificity: 88%-98% <br />
-                Positive Predictive Value: 93%-99% <br />
-                Negative Predictive Value: 86%-91% <br />
+                <strong>Diagnostic Performance</strong><br />
+                AUC-ROC: 0.93-0.99 <br />
+                Sensitivity: 90%-95% <br />
+                Specificity: 90%-96% <br />
+                Positive Predictive Value: 93%-97% <br />
+                Negative Predictive Value: 87%-94% <br />
+              </p>
+              <p>
+                <strong>Performance for Severity Assessment</strong><br />
+                AUC-ROC: 0.97-0.99 <br />
+                Sensitivity: 93%-99% <br />
+                Specificity: 53%-75% <br />
+                Positive Predictive Value: 59%-72% <br />
+                Negative Predictive Value: 94%-99% <br />
               </p>
               <p>
                 <strong>If appendix not visualized or USG unavailable:</strong
                 ><br />
-                AUC-ROC: 0.95<br />
-                <strong>Threshold: 47% | High Likelihood</strong><br />
-                Specificity: 97% | PPV: 90%<br />
-                <strong>Threshold: 37% | Probable</strong><br />
-                Specificity: 92% | NPV: 93%<br />
-                <strong>Threshold: 30% | Possible</strong><br />
-                Sensitivity: 92%<br />
-                <strong>Less than 30%: Low Likelihood</strong><br />
-                NPV: 95%<br />
-                <strong>For Complications Prediction:</strong><br />
-                Sensitivity: 96% | NPV: 98%
+                AUC-ROC: 0.93-0.99<br />
+                <strong>Threshold: >=44% | High Likelihood</strong><br />
+                Specificity: (93-100)% | PPV: (84-100)%<br />
+                Sensitivity: (62-86)% | NPV: (80-93)%<br />
+                <strong>Threshold: less than 25% </strong><br />
+                Specificity: (83-95)% | PPV: (72-92)%<br />
+                Sensitivity: (84-98)% | NPV: (91-99)%<br />
+                <strong>(Values are reported from cross-validation)</strong>
               </p>
             </div>
             <div id="creator" class="section-content" style="display: none">
