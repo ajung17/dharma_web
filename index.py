@@ -51,8 +51,9 @@ class PatientData(BaseModel):
 
 
 # Load models
-Dharma = joblib.load("model_Dharma.joblib")
-model_comp = joblib.load("dharma_comp.joblib")
+Dharma = joblib.load("models/model_Dharma.joblib")
+model_comp = joblib.load("models/dharma_comp.joblib")
+imputer = joblib.load("models/imputer_model.joblib")
 
 
 @app.post("/predict")
@@ -65,7 +66,6 @@ async def predict(data: PatientData):
         columns= ['Nausea', 'Loss_of_Appetite', 'Peritonitis', 'WBC_Count', 'Neutrophil_Percentage', 'CRP', 'Ketones_in_Urine', 'Appendix_Diameter', 'Free_Fluids', 'Body_Temperature','Appendix_Diameter_flag']
 
         # Extract steps from pipeline
-        imputer = Dharma.named_steps['imputer']
         model_diag = Dharma.named_steps['model']
 
         # Impute missing values

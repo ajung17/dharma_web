@@ -20,7 +20,7 @@ class Dharma_Imputer(BaseEstimator, TransformerMixin):
         self.feat_continuous = ['WBC_Count', 'Neutrophil_Percentage', 'CRP', 'Body_Temperature']
         self.feat_categorical = ['Nausea', 'Loss_of_Appetite', 'Peritonitis',
                              'Ketones_in_Urine', 'Free_Fluids']
-        self.feat_model = ['Nausea','Loss_of_Appetite','Peritonitis','WBC_Count','Neutrophil_Percentage','CRP','Ketones_in_Urine','Appendix_Diameter','Free_Fluids','Appendix_Diameter_flag']
+        self.feat_model = ['Nausea', 'Loss_of_Appetite', 'Peritonitis', 'WBC_Count', 'Neutrophil_Percentage', 'CRP', 'Ketones_in_Urine', 'Appendix_Diameter', 'Free_Fluids', 'Body_Temperature']
         self.dtc={}
         
         self.imputer_continuous = IterativeImputer(

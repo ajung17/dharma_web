@@ -8,14 +8,14 @@ def interpret (flag, upper_ci, lower_ci, task):
 
         if flag == 0:
             if lower_ci >= 0.5:
-                if lower_ci - 0.5 < 0.1:
+                if lower_ci - 0.5 < 0.01:
                     result = "High likelihood of acute appendicitis."
                     note = "Close to threshold, further evaluation is recommended."
                 else:
                     result = "Very high likelihood of acute appendicitis."
                     note = "Management in line with acute appendicitis is recommended."
             elif upper_ci <= 0.5:
-                if 0.5 - upper_ci < 0.1:
+                if 0.5 - upper_ci < 0.01:
                     result = "Low likelihood of acute appendicitis."
                     note = "Close to threshold, further evaluation is recommended."
                 else:
@@ -27,16 +27,16 @@ def interpret (flag, upper_ci, lower_ci, task):
 
         else:
             if lower_ci >= 0.44:
-                if lower_ci - 0.44 < 0.1:
+                if lower_ci - 0.44 < 0.01:
                     result = "High likelihood of acute appendicitis."
                     note = "Close to threshold, further evaluation is recommended."
                 else:
                     result = "Very high likelihood of acute appendicitis."
                     note = "Management in line with acute appendicitis is recommended."
             elif upper_ci <= 0.25:
-                if 0.25 - upper_ci < 0.1:
-                        result = "Low likelihood of acute appendicitis."
-                        note = "Close to threshold, further evaluation is recommended."
+                if 0.25 - upper_ci < 0.01:
+                    result = "Low likelihood of acute appendicitis."
+                    note = "Close to threshold, further evaluation is recommended."
                 else:
                         result = "Very low likelihood of acute appendicitis."
                         note = "Exploration of alternative diagnoses is recommended."
@@ -49,7 +49,7 @@ def interpret (flag, upper_ci, lower_ci, task):
             result = "Low likelihood of developing complications."
             note = "Conservative management can be considered."
         else:
-            result = "High likelihood of developing complications."
+            result = "Likelihood of developing complications."
             note = "Early surgical intervention is recommended."
 
     return result, note
