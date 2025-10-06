@@ -98,10 +98,10 @@ async def predict(data: PatientData):
         # Return formatted result
         return {
             "diagnosis": {
-                "probability": round(pred_diag * 100, 2),
+                "probability": round(pred_diag * 100, 0),
                 "confidence_interval": [
-                    round(lower_ci_diag * 100, 2),
-                    round(upper_ci_diag * 100, 2),
+                    round(lower_ci_diag * 100, 0),
+                    round(upper_ci_diag * 100, 0),
                 ],
                 "result": result_diag,
                 "note": note_diag,
@@ -109,10 +109,10 @@ async def predict(data: PatientData):
                 "base_value": round(base_diag, 4),
             },
             "complication": {
-                "probability": round(pred_comp * 100, 2),
+                "probability": round(pred_comp * 100, 0),
                 "confidence_interval": [
-                    round(lower_ci_comp * 100, 2),
-                    round(upper_ci_comp * 100, 2),
+                    round(lower_ci_comp * 100, 0),
+                    round(upper_ci_comp * 100, 0),
                 ],
                 "result": result_comp,
                 "note": note_comp,
