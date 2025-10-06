@@ -9,6 +9,8 @@ import pandas as pd
 from utils.imputer import Dharma_Imputer
 
 df = pd.read_excel('dataset_combined.xlsx')
+df = df[['Nausea','Loss_of_Appetite','Peritonitis','WBC_Count','Neutrophil_Percentage','CRP','Ketones_in_Urine','Appendix_Diameter','Free_Fluids','Appendix_Diameter_flag']]
+
 imputer = Dharma_Imputer()
 
 imputer.fit(df)
