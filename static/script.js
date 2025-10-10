@@ -1,19 +1,30 @@
 let predictionData = null;
 let explanationData = null;
 
-// Feature names for SHAP values (aligned with formData)
-const featureNames = [
+const featureNamesDiagnosis = [
   "Nausea",
   "Loss of Appetite",
   "Peritonitis",
   "WBC Count",
-  "Body Temperature",
   "Neutrophil Percentage",
   "CRP",
-  "Ketones in Urine",
+  "Urinary Ketones",
   "Appendix Diameter",
   "Free Fluids",
-  "Additional Feature", // Added for complication's extra SHAP value
+  "Appendix Visualization",
+];
+const featureNamesComplications = [
+  "Nausea",
+  "Loss of Appetite",
+  "Peritonitis",
+  "Urinary Ketones",
+  "Free Fluids",
+  "CRP",
+  "WBC Count",
+  "Body Temperature",
+  "Appendix Diameter",
+  "Neutrophil Percentage",
+  "Appendix Visualization",
 ];
 
 $(document).ready(function () {
@@ -52,7 +63,7 @@ $(document).ready(function () {
 
       const shapValues = {
         diagnosis: explanationData.diagnosis.shap_values,
-        complication: explanationData.complication.shap_values,
+        complication: explanationData.complication?.shap_values,
       };
 
       // Render SHAP explanation for both
@@ -119,44 +130,55 @@ $(document).ready(function () {
         const complication = response.complication;
 
         // --- BUILD DIAGNOSIS RESULT HTML ---
+        // --- BUILD DIAGNOSIS RESULT HTML ---
+        // --- BUILD DIAGNOSIS RESULT HTML ---
         let html = `
-          <div class="result-section diagnosis-section">
-            <h4>Diagnosis</h4>
-            <div class="result-row">
-              <span class="result-label">Probability:</span>
-              <span class="result-value">${diagnosis.probability.toFixed(
-                2
-              )}%</span>
-            </div>
-            <div class="result-row">
-              <span class="result-label">95% Confidence Interval:</span>
-              <span class="result-value">${diagnosis.confidence_interval[0].toFixed(
-                2
-              )}% - ${diagnosis.confidence_interval[1].toFixed(2)}%</span>
-            </div>
-            <div class="result-row">
-              <span class="result-label">Result:</span>
-              <span class="result-value high-risk">${diagnosis.result}</span>
-            </div>
-            <div class="clinical-note">Note: ${diagnosis.note}</div>
-          </div>
-        `;
+  <div class="result-section diagnosis-section" style= display: flex; flex-direction: column; align-items: center;>
+    <div class="result-row dharma-score-row" 
+         style="text-align:center; margin-bottom:15px; display:flex;align-items:baseline; gap:10px; color:wheat;">
+      <span class="result-label dharma-score-label" 
+            style="font-size:1.2rem; font-weight:600; letter-spacing:1px; text-shadow:0 0 6px rgba(245,222,179,0.6);">
+        DHARMA SCORE:
+      </span>
+      <span class="dharma-score-value" 
+            style="font-size:1.2rem; font-weight:600; text-shadow:0 0 10px rgba(245,222,179,0.8);">
+        ${diagnosis.probability.toFixed(0)}%
+      </span>
+    </div>
+
+    <div class="result-row">
+      <span class="result-label">95% Confidence Interval:</span>
+      <span class="result-value">
+        ${diagnosis.confidence_interval[0].toFixed(0)}% - 
+        ${diagnosis.confidence_interval[1].toFixed(0)}%
+      </span>
+    </div>
+
+    <div class="result-row">
+      <span class="result-label">Result:</span>
+      <span class="result-value high-risk">${diagnosis.result}</span>
+    </div>
+
+    <div class="clinical-note">Note: ${diagnosis.note}</div>
+  </div>
+`;
 
         // --- BUILD COMPLICATION RESULT HTML ---
-        html += `
+        if (complication) {
+          html += `
           <div class="result-section complication-section mt-4">
-            <h4>Complications</h4>
+            <h4>Severity Assessment</h4>
             <div class="result-row">
               <span class="result-label">Probability:</span>
               <span class="result-value">${complication.probability.toFixed(
-                2
+                0
               )}%</span>
             </div>
             <div class="result-row">
               <span class="result-label">95% Confidence Interval:</span>
               <span class="result-value">${complication.confidence_interval[0].toFixed(
-                2
-              )}% - ${complication.confidence_interval[1].toFixed(2)}%</span>
+                0
+              )}% - ${complication.confidence_interval[1].toFixed(0)}%</span>
             </div>
             <div class="result-row">
               <span class="result-label">Result:</span>
@@ -165,7 +187,7 @@ $(document).ready(function () {
             <div class="clinical-note">Note: ${complication.note}</div>
           </div>
         `;
-
+        }
         $("#result").show().html(html);
         $("#explainButton").removeClass("hidden");
       },
@@ -185,8 +207,6 @@ $(document).ready(function () {
     $("#" + sectionToShow).show();
   });
 });
-
-// Function to render SHAP tables in the explanation modal
 function renderShapTables(data) {
   const explainContent = document.getElementById("explainContent");
   if (!explainContent) {
@@ -194,46 +214,63 @@ function renderShapTables(data) {
     return;
   }
 
-  let html = '<div class="shap-tables-container">';
+const onlyDiagnosis = data.diagnosis && !data.complication;
+let html = `<div class="shap-tables-container" style="${
+  onlyDiagnosis ? "display:flex; flex-direction:column; align-items:center; justify-content:center;" : ""
+}">`;
 
-  for (const type of ["diagnosis", "complication"]) {
+  // Determine which SHAP data types are available
+  const availableTypes = [];
+  if (data.diagnosis) availableTypes.push("diagnosis");
+  if (data.complication) availableTypes.push("complication");
+
+  if (availableTypes.length === 0) {
+    html += `<p style="color:red;">No SHAP data found.</p>`;
+  }
+
+  // Loop through only available SHAP types
+  for (const type of availableTypes) {
     const shap = data[type];
+    if (!shap || !Array.isArray(shap)) continue;
 
-    if (!shap || !Array.isArray(shap)) {
-      html += `<p style="color:red;">No SHAP data found for ${type}.</p>`;
-      continue;
-    }
+    const featureNames =
+      type === "diagnosis" ? featureNamesDiagnosis : featureNamesComplications;
 
-    const baseValue = explanationData[type].base_value ?? 0;
+    const baseValue = explanationData[type]?.base_value ?? 0;
     const shapValues = shap;
     const totalImpact = shapValues.reduce((sum, v) => sum + v, 0);
     const finalValue = baseValue + totalImpact;
 
     html += `
       <div class="shap-table-wrapper">
-        <h3>${type.charAt(0).toUpperCase() + type.slice(1)} Explanation</h3>
-        <p class="base-value-row">
-          <span class="base-value-label"><strong>Base Value:</strong></span>
-          <span class="base-value-number">${baseValue.toFixed(4)}</span>
+        <h3 style="color:wheat; text-align:center;">
+          ${type.charAt(0).toUpperCase() + type.slice(1)} Explanation
+        </h3>
+        <p class="base-value-row" style="text-align:center;">
+          <strong>Base Value:</strong> ${baseValue.toFixed(3)}
         </p>
-        <p class="final-value-row">
-          <span class="final-value-label"><strong>Final Model Output:</strong></span>
-          <span class="final-value-number">${finalValue.toFixed(4)}</span>
+        <p class="final-value-row" style="text-align:center;">
+          <strong>Final Model Output:</strong> ${finalValue.toFixed(3)}
         </p>
-        <table class="shap-table">
+
+        <table class="shap-table" style="margin:auto; border-collapse:collapse; width:90%;">
           <thead>
-            <tr><th>Feature</th><th>SHAP Value</th></tr>
+            <tr style="background:#333; color:wheat;">
+              <th style="padding:6px;">Feature</th>
+              <th style="padding:6px;">SHAP Value</th>
+            </tr>
           </thead>
           <tbody>
     `;
 
     shapValues.forEach((v, i) => {
       const featureName = featureNames[i] || `Feature ${i + 1}`;
-      const signClass = v >= 0 ? "positive" : "negative";
+      const signColor = v >= 0 ? "#5cff8d" : "#ff7b7b";
+
       html += `
         <tr>
-          <td>${featureName}</td>
-          <td class="${signClass}">${v.toFixed(4)}</td>
+          <td style="padding:4px 8px; color:white;">${featureName}</td>
+          <td style="padding:4px 8px; color:${signColor};">${v.toFixed(4)}</td>
         </tr>
       `;
     });
