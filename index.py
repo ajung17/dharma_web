@@ -80,20 +80,32 @@ async def predict(data: PatientData):
 
         # Predictions
         pred_diag = model_diag.predict_proba(x_imputed_diag_df)[0][1]
-        pred_comp = model_comp.predict_proba(x_imputed_comp_df)[0][1]
-
-        # SHAP explanations
-        shap_diag, base_diag = shap_explanation(model_diag, x_imputed_diag_df)
-        shap_comp, base_comp = shap_explanation(model_comp, x_imputed_comp_df)
-
-        # Confidence intervals
         upper_ci_diag, lower_ci_diag = CI95(model_diag, x_imputed_diag_df)
-        upper_ci_comp, lower_ci_comp = CI95(model_comp, x_imputed_comp_df)
-
-        # Interpret results
+        shap_diag, base_diag = shap_explanation(model_diag, x_imputed_diag_df)
         flag = x_imputed_diag_df['Appendix_Diameter_flag'].values[0]
         result_diag, note_diag = interpret(flag, upper_ci_diag, lower_ci_diag, task='diagnosis')
-        result_comp, note_comp = interpret(flag, upper_ci_comp, lower_ci_comp, task='complication')
+
+
+        if upper_ci_diag >= 0.5:
+            pred_comp = model_comp.predict_proba(x_imputed_comp_df)[0][1]
+            upper_ci_comp, lower_ci_comp = CI95(model_comp, x_imputed_comp_df)
+            shap_comp, base_comp = shap_explanation(model_comp, x_imputed_comp_df)
+            result_comp, note_comp = interpret(flag, upper_ci_comp, lower_ci_comp, task='complication')
+
+            comp_result = {
+                "probability": round(pred_comp * 100, 0),
+                "confidence_interval": [
+                    round(lower_ci_comp * 100, 0),
+                    round(upper_ci_comp * 100, 0),
+                ],
+                "result": result_comp,
+                "note": note_comp,
+                "shap_values": shap_comp.round(4).tolist(),
+                "base_value": round(base_comp, 4),
+            }
+
+        else:
+            comp_result = None
 
         # Return formatted result
         return {
@@ -108,17 +120,7 @@ async def predict(data: PatientData):
                 "shap_values": shap_diag.round(4).tolist(),
                 "base_value": round(base_diag, 4),
             },
-            "complication": {
-                "probability": round(pred_comp * 100, 0),
-                "confidence_interval": [
-                    round(lower_ci_comp * 100, 0),
-                    round(upper_ci_comp * 100, 0),
-                ],
-                "result": result_comp,
-                "note": note_comp,
-                "shap_values": shap_comp.round(4).tolist(),
-                "base_value": round(base_comp, 4),
-            },
+            "complication": comp_result
         }
 
     except Exception as e:

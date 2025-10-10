@@ -50,7 +50,7 @@ def interpret (flag, upper_ci, lower_ci, task):
             note = "Conservative management can be considered."
         else:
             result = "Likelihood of developing complications."
-            note = "Early surgical intervention is recommended."
+            note = "Close monitoring and preparedness for surgical intervention is recommended."
 
     return result, note
 
