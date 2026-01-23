@@ -233,11 +233,22 @@
             </div>
             <div id="about" class="section-content">
               <p>
-                Dharma is a novel, non-linear, interpretable AI based clinical scoring system
+                Dharma is a novel, non-linear, clinically grounded and interpretable machine-learning based clinical scoring system
                 for diagnosis and prognosis of acute appendicitis in patients presenting with 
                 acute abdominal pain.
-                It utilizes routinely available clinical parameters and point-of-care ultrasound findings to provide accurate predictions.
+                It utilizes routinely available clinical parameters and point-of-care ultrasound findings to provide diagnostic and prognostic risk estimates.<br />
+                Thus providing an evidence-based clinical decision support.
               </p>
+              <p>
+                    <strong>Dharma Framework:</strong>
+                <br />
+              The framework consists of three key components:
+                1. Dharma_Imputer : Intelligent imputation of commonly missing features (CRP, urinary ketones, free-fluids) using decision trees pre-trained on appendicitis data. It also treats missing appendix diameter data as separate signal<br />
+                2. Dharma_Dianostic Model : Balanced random-forest model.<br />
+                3. Dharma_Severity Model : Highly sensitive random-forest model for severity screening for confirmed appendicitis cases by upstream diagnostic model.<br />
+              </p>
+  
+
               <p><strong>SHAP Explanations:</strong>
                 <br />
                 The model uses SHAP (SHapley Additive exPlanations) values to interpret predictions. Each SHAP value 
@@ -268,7 +279,7 @@
 
               <p>
                 PERFORMANCE METRICS:<br />
-                <strong>Diagnostic Performance</strong><br />
+                <strong>Diagnostic Performance (cross-validation)</strong><br />
                 AUC-ROC: 0.93-0.99 <br />
                 Sensitivity: 90%-95% <br />
                 Specificity: 90%-96% <br />
@@ -276,7 +287,7 @@
                 Negative Predictive Value: 87%-94% <br />
               </p>
               <p>
-                <strong>Performance for Severity Assessment</strong><br />
+                <strong>Performance for Severity Assessment (cross-validation)</strong><br />
                 AUC-ROC: 0.97-0.99 <br />
                 Sensitivity: 93%-99% <br />
                 Specificity: 53%-75% <br />
@@ -284,7 +295,7 @@
                 Negative Predictive Value: 94%-99% <br />
               </p>
               <p>
-                <strong>If appendix not visualized or USG unavailable:</strong
+                <strong>If appendix not visualized or USG unavailable (n=144 test cohort):</strong
                 ><br />
                 AUC-ROC: 0.93-0.99<br />
                 <strong>Threshold: >=44% | High Likelihood</strong><br />
@@ -300,7 +311,7 @@
               <p>
                 <strong>Conceptualized, Designed, and Developed by:</strong
                 ><br />
-                <strong>Dr. Anup Thapa, MBBS</strong>
+                <strong>Dr. Anup Thapa Kshetri, MBBS</strong>
                 
 
                 <a
@@ -318,7 +329,7 @@
                   <i class="fab fa-linkedin-in"></i>
                 </a>
                 <br />
-                Founder: <strong>DharmaAI</strong>
+                Founder and Lead: <strong>Dharma-AI.org</strong>
                 <br />
               </p>
               <p>
