@@ -243,9 +243,10 @@
                     <strong>Dharma Framework:</strong>
                 <br />
               The framework consists of three key components:
-                1. Dharma_Imputer : Intelligent imputation of commonly missing features (CRP, urinary ketones, free-fluids) using decision trees pre-trained on appendicitis data. It also treats missing appendix diameter data as separate signal<br />
+                1. Dharma_Imputer : Intelligent imputation of commonly missing features (CRP, urinary ketones, free-fluids) using decision trees pre-trained on appendicitis data. It also handles missing appendix diameter feature as an independent signal,
+                mimicing real-world clinical reasoning.<br />
                 2. Dharma_Dianostic Model : Balanced random-forest model.<br />
-                3. Dharma_Severity Model : Highly sensitive random-forest model for severity screening for confirmed appendicitis cases by upstream diagnostic model.<br />
+                3. Dharma_Severity Model : Highly sensitive random-forest model for severity screening for confirmed appendicitis cases by the upstream diagnostic model.<br />
               </p>
   
 
