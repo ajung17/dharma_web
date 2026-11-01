@@ -86,26 +86,49 @@ async def predict(data: PatientData):
         result_diag, note_diag = interpret(flag, upper_ci_diag, lower_ci_diag, task='diagnosis')
 
 
-        if upper_ci_diag >= 0.5:
-            pred_comp = model_comp.predict_proba(x_imputed_comp_df)[0][1]
-            upper_ci_comp, lower_ci_comp = CI95(model_comp, x_imputed_comp_df)
-            shap_comp, base_comp = shap_explanation(model_comp, x_imputed_comp_df)
-            result_comp, note_comp = interpret(flag, upper_ci_comp, lower_ci_comp, task='complication')
-
-            comp_result = {
-                "probability": round(pred_comp * 100, 0),
-                "confidence_interval": [
-                    round(lower_ci_comp * 100, 0),
-                    round(upper_ci_comp * 100, 0),
-                ],
-                "result": result_comp,
-                "note": note_comp,
-                "shap_values": shap_comp.round(4).tolist(),
-                "base_value": round(base_comp, 4),
-            }
-
+        if flag == 0:
+            if upper_ci_diag >= 0.5:
+                pred_comp = model_comp.predict_proba(x_imputed_comp_df)[0][1]
+                upper_ci_comp, lower_ci_comp = CI95(model_comp, x_imputed_comp_df)
+                shap_comp, base_comp = shap_explanation(model_comp, x_imputed_comp_df)
+                result_comp, note_comp = interpret(flag, upper_ci_comp, lower_ci_comp, task='complication')
+    
+                comp_result = {
+                    "probability": round(pred_comp * 100, 0),
+                    "confidence_interval": [
+                        round(lower_ci_comp * 100, 0),
+                        round(upper_ci_comp * 100, 0),
+                    ],
+                    "result": result_comp,
+                    "note": note_comp,
+                    "shap_values": shap_comp.round(4).tolist(),
+                    "base_value": round(base_comp, 4),
+                }
+    
+            else:
+                comp_result = None
         else:
-            comp_result = None
+             if upper_ci_diag >= 0.44:
+                pred_comp = model_comp.predict_proba(x_imputed_comp_df)[0][1]
+                upper_ci_comp, lower_ci_comp = CI95(model_comp, x_imputed_comp_df)
+                shap_comp, base_comp = shap_explanation(model_comp, x_imputed_comp_df)
+                result_comp, note_comp = interpret(flag, upper_ci_comp, lower_ci_comp, task='complication')
+    
+                comp_result = {
+                    "probability": round(pred_comp * 100, 0),
+                    "confidence_interval": [
+                        round(lower_ci_comp * 100, 0),
+                        round(upper_ci_comp * 100, 0),
+                    ],
+                    "result": result_comp,
+                    "note": note_comp,
+                    "shap_values": shap_comp.round(4).tolist(),
+                    "base_value": round(base_comp, 4),
+                }
+    
+            else:
+                comp_result = None
+            
 
         # Return formatted result
         return {
